@@ -1,0 +1,14 @@
+{
+    "name": "enz0project/model-documenter",
+    "description": "Adds docblocks to Laravel models",
+    "type": "library",
+    "require": {
+        "laravel/framework": "5.*"
+    },
+    "authors": [
+        {
+            "name": "Lars Bergvall",
+            "email": "lars.m.bergvall@gmail.com"
+        }
+    ]
+}
