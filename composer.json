@@ -1,5 +1,5 @@
 {
-    "name": "enz0project/model-documenter",
+    "name": "enz0project/laravel-model-documenter",
     "description": "Adds docblocks to Laravel models",
     "type": "library",
     "require": {
