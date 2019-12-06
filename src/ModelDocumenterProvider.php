@@ -1,6 +1,6 @@
 <?php
 
-namespace enz0project\ModelDocumenter;
+namespace Enz0project\ModelDocumenter;
 
 use Illuminate\Support\ServiceProvider;
 

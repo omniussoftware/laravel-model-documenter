@@ -14,14 +14,17 @@
 	],
 	"autoload": {
 		"psr-4": {
-			"enz0project\\ModelDocumenter\\": "src/"
+			"Enz0project\\ModelDocumenter\\": "src/"
 		}
 	},
 	"extra": {
 		"laravel": {
 			"providers": [
-				"enz0project\\ModelDocumenter\\ModelDocumenterProvider"
-			]
+				"Enz0project\\ModelDocumenter\\ModelDocumenterProvider"
+			],
+			"aliases": {
+
+			}
 		}
 	}
 }

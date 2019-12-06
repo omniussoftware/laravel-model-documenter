@@ -1,7 +1,7 @@
 <?php
 
 
-namespace enz0project\ModelDocumenter\Modules;
+namespace Enz0project\ModelDocumenter\Modules;
 
 
 interface ModifiesLines {

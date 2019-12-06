@@ -1,19 +1,19 @@
 <?php
 
 
-namespace enz0project\ModelDocumenter;
+namespace Enz0project\ModelDocumenter;
 
 
-use enz0project\ModelDocumenter\Modules\AfterClass;
-use enz0project\ModelDocumenter\Modules\BaseModule;
-use enz0project\ModelDocumenter\Modules\BeforeWrite;
-use enz0project\ModelDocumenter\Modules\InsideClass;
-use enz0project\ModelDocumenter\Modules\ModifiesClassDocBlock;
-use enz0project\ModelDocumenter\Modules\ModifiesLines;
-use enz0project\ModelDocumenter\Modules\UsesLines;
-use enz0project\ModelDocumenter\Modules\UsesModelData;
-use enz0project\ModelDocumenter\Modules\UsesStringToBeWritten;
-use enz0project\ModelDocumenter\Modules\WritesLines;
+use Enz0project\ModelDocumenter\Modules\AfterClass;
+use Enz0project\ModelDocumenter\Modules\BaseModule;
+use Enz0project\ModelDocumenter\Modules\BeforeWrite;
+use Enz0project\ModelDocumenter\Modules\InsideClass;
+use Enz0project\ModelDocumenter\Modules\ModifiesClassDocBlock;
+use Enz0project\ModelDocumenter\Modules\ModifiesLines;
+use Enz0project\ModelDocumenter\Modules\UsesLines;
+use Enz0project\ModelDocumenter\Modules\UsesModelData;
+use Enz0project\ModelDocumenter\Modules\UsesStringToBeWritten;
+use Enz0project\ModelDocumenter\Modules\WritesLines;
 use Illuminate\Support\Str;
 
 class ModelLineWriter {

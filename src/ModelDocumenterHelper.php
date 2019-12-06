@@ -1,10 +1,10 @@
 <?php
 
 
-namespace enz0project\ModelDocumenter;
+namespace Enz0project\ModelDocumenter;
 
 
-use enz0project\ModelDocumenter\ModelLineWriter;
+use Enz0project\ModelDocumenter\ModelLineWriter;
 use Illuminate\Support\Str;
 
 class ModelDocumenterHelper {

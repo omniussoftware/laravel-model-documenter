@@ -1,7 +1,7 @@
 <?php
 
 
-namespace enz0project\ModelDocumenter;
+namespace Enz0project\ModelDocumenter;
 
 
 use Exception;
