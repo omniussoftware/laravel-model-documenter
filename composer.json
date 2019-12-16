@@ -3,8 +3,8 @@
 	"description": "Adds docblocks to Laravel models",
 	"type": "library",
 	"require": {
-		"Illuminate/Support": "^5.6",
-		"Illuminate/Console": "^5.6"
+		"Illuminate/Support": "^6.0",
+		"Illuminate/Console": "^6.0"
 	},
 	"authors": [
 		{
