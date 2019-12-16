@@ -101,6 +101,10 @@ class ModelLineWriter {
 			$this->runModule($module);
 		}
 
+		if ($this->lines[count($this->lines) - 1] === '') {
+			array_pop($this->lines);
+		}
+
 		$this->stringToBeWritten = implode('', $this->lines);
 
 		// If the model already has a docblock, replace it with the new one
