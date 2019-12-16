@@ -152,7 +152,6 @@ class ModelAnalyzer {
 		$dates->setAccessible(true);
 		$datesValue = $dates->getValue($instance);
 		$dates->setAccessible(false);
-
 		return $datesValue;
 	}
 
@@ -224,7 +223,7 @@ class ModelAnalyzer {
 			$propName = $property->Field;
 
 			// If the prop is an integer and the property is in the $dates array, it is a Carbon
-			if ($phpType === 'int' && in_array($propName, $dates)) {
+			if (in_array($phpType, ['int', 'int|null']) && in_array($propName, $dates)) {
 				$phpType = 'Carbon';
 			}
 

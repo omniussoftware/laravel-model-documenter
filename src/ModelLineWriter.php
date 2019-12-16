@@ -322,7 +322,6 @@ class ModelLineWriter {
 	}
 
 	/**
-	 * @param $modelData
 	 * @return bool
 	 */
 	protected function hasExistingDocBlock(): bool {
