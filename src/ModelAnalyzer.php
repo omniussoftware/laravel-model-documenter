@@ -223,8 +223,10 @@ class ModelAnalyzer {
 			$propName = $property->Field;
 
 			// If the prop is an integer and the property is in the $dates array, it is a Carbon
-			if (in_array($phpType, ['int', 'int|null']) && in_array($propName, $dates)) {
+			if ($phpType === 'int' && in_array($propName, $dates)) {
 				$phpType = 'Carbon';
+			} elseif ($phpType === 'int|null' && in_array($propName, $dates)) {
+				$phpType = 'Carbon|null';
 			}
 
 			$propsToReturn[$propName] = $phpType;
