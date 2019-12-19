@@ -7,6 +7,6 @@ return [
 	'modules' => [
 	],
 	'options' => [
-		\Enz0project\ModelDocumenter\ModelDocumenterOptions::SORT_ALPHABETICALLY => false,
+		// \Enz0project\ModelDocumenter\ModelDocumenterOptions::SORT_DOCBLOCK => \Enz0project\ModelDocumenter\ModelDocumenterOptions::SORT_NAME_ASC,
 	],
 ];

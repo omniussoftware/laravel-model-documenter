@@ -28,6 +28,7 @@ class ModelAnalyzer {
 	private $currentFile;
 	private $modelFileType;
 	private $traitsInModel;
+	private $options;
 
 	public function __construct() {
 		if (!self::$newLine) {
@@ -49,8 +50,8 @@ class ModelAnalyzer {
 			}
 		}
 
-		// TODO: bind in service provider
 		$this->dbHelper = app()->make(DBHelper::class);
+		$this->options = config('modeldocumenter.options');
 	}
 
 	public function analyze(string $filePath) {
@@ -74,12 +75,13 @@ class ModelAnalyzer {
 			$properties = $this->analyzeProperties($reflectionClass, $this->dbHelper->fetchColumnData($tableName));
 		}
 
-		// Finally, sort props and relations alphabetically by name
+		
 		if ($properties) {
-			ksort($properties);
+			$properties = $this->sort($properties);
 		}
-		ksort($relations);
+		$relations = $this->sort($relations);
 
+		
 		$classDocBlock = $reflectionClass->getDocComment();
 
 		if (!$this->classDocBlockIsValid($classDocBlock)) {
@@ -104,6 +106,33 @@ class ModelAnalyzer {
 		return $modelData;
 	}
 
+	/**
+	 * Sorts an array if the ModelDocumenter options say it should; otherwise just returns the original array
+	 *
+	 * @param array $array
+	 * @return array
+	 */
+	protected function sort(array $array): array {
+		if (array_key_exists(ModelDocumenterOptions::SORT_DOCBLOCK, $this->options)) {
+			static $sorts = [];
+
+			if ($sorts === []) {
+				$sorts = [
+					ModelDocumenterOptions::SORT_NAME_ASC => function (&$array) { ksort($array); },
+					ModelDocumenterOptions::SORT_NAME_DESC => function (&$array) { krsort($array); },
+				];
+			}
+
+			$sorts[$this->options[ModelDocumenterOptions::SORT_DOCBLOCK]]($array);
+		}
+
+		return $array;
+	}
+
+	/**
+	 * @param string $classDocBlock
+	 * @return bool
+	 */
 	protected function classDocBlockIsValid(string $classDocBlock): bool {
 		$phpstormHeaders = '/**' . self::$newLine . ' * Created by phpStorm.' . self::$newLine;
 
@@ -152,6 +181,7 @@ class ModelAnalyzer {
 		$dates->setAccessible(true);
 		$datesValue = $dates->getValue($instance);
 		$dates->setAccessible(false);
+
 		return $datesValue;
 	}
 
