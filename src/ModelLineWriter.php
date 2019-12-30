@@ -101,7 +101,7 @@ class ModelLineWriter {
 			$this->runModule($module);
 		}
 
-		$this->stringToBeWritten = rtrim(implode('', $this->lines));
+		$this->stringToBeWritten = implode('', $this->lines);
 
 		// If the model already has a docblock, replace it with the new one
 		if ($hasOriginalDocBlock) {
