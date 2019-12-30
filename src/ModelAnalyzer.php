@@ -65,9 +65,6 @@ class ModelAnalyzer {
 
 		// Get all relations from this class as well as any traits it has
 		$relations = $this->analyzeRelations($reflectionClass, $this->lines);
-		foreach ($this->traitsInModel as $trait) {
-			$relations = array_merge($relations, $this->getTraitRelations($trait));
-		}
 
 		$properties = null;
 		if ($this->modelFileType === self::TYPE_CLASS) {
@@ -199,13 +196,13 @@ class ModelAnalyzer {
 
 		foreach ($methods as $method) {
 			$currMethod = $method;
+
 			// If the class declaring this method isn't the model we're inside now, we skip over it; for now.
-			// TODO: Add support for getting relations from parent class as well
 			$methodClassName = $method->getDeclaringClass()->getName();
+
 			if ($reflectionClass->getName() !== $methodClassName) {
 				continue;
 			}
-
 
 			$methodName = $method->getName();
 
@@ -331,25 +328,6 @@ class ModelAnalyzer {
 				return str_replace([';', "\n", "\r"], '', $split[$key + 1]);
 			}
 		}
-	}
-
-	/**
-	 * @param ReflectionClass $trait
-	 * @return array
-	 */
-	private function getTraitRelations(ReflectionClass $trait): array {
-		$key = $trait->getName();
-
-		if (array_key_exists($key, $this->traitRelationsCache)) {
-			return $this->traitRelationsCache[$key];
-		}
-
-		$traitFileContents = $this->getLines($trait->getFileName());
-		$relations = $this->analyzeRelations($trait, $traitFileContents);
-
-		$this->traitRelationsCache[$key] = $relations;
-
-		return $relations;
 	}
 
 	/**
