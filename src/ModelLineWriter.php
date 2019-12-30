@@ -77,8 +77,14 @@ class ModelLineWriter {
 				// Add the class docblock before the class declaration!
 				if (!$hasOriginalDocBlock) {
 					$newBlock = explode(ModelAnalyzer::$newLine, $this->modelData->classDocBlock);
-					foreach ($newBlock as $classBlockLine) {
-						$this->addLine($classBlockLine . ModelAnalyzer::$newLine);
+					foreach ($newBlock as $key => $classBlockLine) {
+						// If its the last line we don't add a newline because otherwise there is a blank line between the
+						// docblock and the class
+						if ($key === count($newBlock) - 1) {
+							$this->addLine($classBlockLine);
+						} else {
+							$this->addLine($classBlockLine . ModelAnalyzer::$newLine);
+						}
 					}
 				}
 
