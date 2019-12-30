@@ -232,6 +232,8 @@ class ModelLineWriter {
 
 		$linesToIgnore = [
 			'/**',
+			"Abstract class $modelData->name",
+			"Interface $modelData->name",
 			"Class $modelData->name",
 			' * Properties:',
 			' * Relations:',
@@ -244,9 +246,11 @@ class ModelLineWriter {
 
 		$originalDocBlock = explode(ModelAnalyzer::$newLine, $modelData->classDocBlock);
 
+		$class = ucfirst(ModelDocumenterHelper::getClassDeclaration($modelData));
+
 		$newDocBlock = [
 			'/**',
-			" * Class $modelData->name",
+			" * $class",
 		];
 
 		$previousLine = null;
