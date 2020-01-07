@@ -71,9 +71,17 @@ class ModelLineWriter {
 
 		$isInsideClass = false;
 
-		foreach ($this->modelData->fileContents as $key => $line) {
-			if (!$isInsideClass && Str::startsWith($line, $classDeclarationString)) {
+		$previousLine = null;
 
+		foreach ($this->modelData->fileContents as $key => $line) {
+			// Ugly hack to remove newlines between class docblock and class declaration
+			if ($isInsideClass
+					&& Str::contains($previousLine, ' */') && $key !== count($this->modelData->fileContents) - 1
+					&& Str::startsWith($this->modelData->fileContents[$key + 1], $classDeclarationString)) {
+				continue;
+			}
+
+			if (!$isInsideClass && Str::startsWith($line, $classDeclarationString)) {
 				// Add the class docblock before the class declaration!
 				if (!$hasOriginalDocBlock) {
 					$newBlock = explode(ModelAnalyzer::$newLine, $this->modelData->classDocBlock);
@@ -87,7 +95,6 @@ class ModelLineWriter {
 						}
 					}
 				}
-
 				$this->addLine($line);
 				$isInsideClass = true;
 			} else {
@@ -99,6 +106,8 @@ class ModelLineWriter {
 
 				$this->addLine($line);
 			}
+
+			$previousLine = $line;
 		}
 
 		// Run "AfterClass" modules
