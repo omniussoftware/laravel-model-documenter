@@ -48,9 +48,6 @@ class ModelDocumenterCommand extends Command {
 		$bar->start();
 
 		foreach ($files as $file) {
-			// if (!str_contains($file, 'CourseResourceAccessedLog')) {
-			// 	continue;
-			// }
 			$modelData = $this->modelAnalyzer->analyze($file);
 			$newFileContents = (new ModelLineWriter($modelData))->replaceFileContents();
 
