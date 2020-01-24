@@ -4,6 +4,13 @@
 
 `php artisan vendor:publish --provider="enz0project\ModelDocumenter\ModelDocumenterProvider"`
 
+## Running the command:
+
+`php artisan enz0project:model-documenter` will run the model-documenter on all models specified in the folder in `./config/modeldocumenter.php`. 
+
+If you want to run the the model-documenter only on one specific model, you can give it the filename as an argument:
+`php artisan enz0project:model-documenter ForumThread` will make it run only on `ForumThread.php` in the models folder.
+
 ## Docs
 
 If you want to use this outside of the command or write your own command, you can use the ModelAnalyzer:
