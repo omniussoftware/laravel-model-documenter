@@ -3,6 +3,7 @@
 namespace Enz0project\ModelDocumenter;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 class ModelDocumenterCommand extends Command {
 	/**
@@ -10,19 +11,25 @@ class ModelDocumenterCommand extends Command {
 	 *
 	 * @var string
 	 */
-	protected $signature = 'enz0project:model-documenter';
+	protected $signature = 'enz0project:model-documenter {model?}';
 
 	/**
 	 * The console command description.
 	 *
 	 * @var string
 	 */
-	protected $description = 'Adds docblocks and such to Laravel models';
+	protected $description = "Adds docblocks and such to Laravel models. Usage:\n\n"
+		.  "php artisan enz0project:model-documenter {model filename}\n\n"
+		.   "If {model filename} (i.e. 'User'), the command will only run on the file User.php. If omitted, it will run on all models.";
+
+	/** @var string */
+	private $singleModelFilename;
 
 	/**
 	 * @var ModelAnalyzer
 	 */
 	protected $modelAnalyzer;
+
 	/**
 	 * Create a new command instance.
 	 *
@@ -39,6 +46,11 @@ class ModelDocumenterCommand extends Command {
 	 */
 	public function handle() {
 		$this->modelAnalyzer = new ModelAnalyzer();
+
+		if ($this->hasArgument('model')) {
+			$this->singleModelFilename = $this->argument('model');
+		}
+
 		$modelFolder = config('modeldocumenter.modelPath');
 		$recursive = config('modeldocumenter.recursive');
 
@@ -75,6 +87,11 @@ class ModelDocumenterCommand extends Command {
 		if ($recursive) {
 			foreach ($files as $file) {
 				$filePath = realpath($file);
+
+				// If we are in "single model mode" we just skip all files that arent the model we're looking for
+				if (null !== $this->singleModelFilename && $this->singleModelFilename !== '' && !Str::endsWith($filePath, "/$this->singleModelFilename.php")) {
+					continue;
+				}
 
 				if (!is_dir($filePath)) {
 					$results[] = $filePath;
