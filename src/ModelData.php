@@ -79,6 +79,13 @@ class ModelData {
 	}
 
 	/**
+	 * @param string $classDocBlock
+	 */
+	public function setClassDocBlock(string $classDocBlock): void {
+		$this->classDocBlock = $classDocBlock;
+	}
+
+	/**
 	 * ModelData constructor.
 	 * @param string $name
 	 * @param int $type
