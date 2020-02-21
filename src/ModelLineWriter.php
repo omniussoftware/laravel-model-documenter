@@ -43,6 +43,7 @@ class ModelLineWriter {
 		BeforeWrite::class => [],
 	];
 
+	/** @var ModelData */
 	private $modelData;
 	/** @var array */
 	private $lines = [];
@@ -57,7 +58,7 @@ class ModelLineWriter {
 	];
 
 
-	public function __construct($modelData) {
+	public function __construct(ModelData $modelData) {
 		$this->modelData = $modelData;
 		$this->createModules();
 	}
@@ -65,7 +66,7 @@ class ModelLineWriter {
 	public function replaceFileContents(): string {
 		$classDeclarationString = ModelDocumenterHelper::getClassDeclaration($this->modelData);
 		$hasOriginalDocBlock = $this->hasExistingDocBlock();
-		$oldDocBlock = $this->modelData->classDocBlock;
+		$oldDocBlock = $this->modelData->getClassDocBlock();
 
 		$this->buildClassDocBlock();
 
@@ -73,18 +74,19 @@ class ModelLineWriter {
 
 		$previousLine = null;
 
-		foreach ($this->modelData->fileContents as $key => $line) {
+		foreach ($this->modelData->getFileContents() as $key => $line) {
 			// Ugly hack to remove newlines between class docblock and class declaration
 			if ($isInsideClass
-					&& Str::contains($previousLine, ' */') && $key !== count($this->modelData->fileContents) - 1
-					&& Str::startsWith($this->modelData->fileContents[$key + 1], $classDeclarationString)) {
+					&& Str::contains($previousLine, ' */') && $key !== count($this->modelData->getFileContents()) - 1
+					&& Str::startsWith($this->modelData->getFileContents()[$key + 1], $classDeclarationString)) {
 				continue;
 			}
 
 			if (!$isInsideClass && Str::startsWith($line, $classDeclarationString)) {
 				// Add the class docblock before the class declaration!
 				if (!$hasOriginalDocBlock) {
-					$newBlock = explode(ModelAnalyzer::$newLine, $this->modelData->classDocBlock);
+					$newBlock = explode(ModelAnalyzer::$newLine, $this->modelData->getClassDocBlock());
+
 					foreach ($newBlock as $key => $classBlockLine) {
 						// If its the last line we don't add a newline because otherwise there is a blank line between the
 						// docblock and the class
@@ -120,7 +122,7 @@ class ModelLineWriter {
 
 		// If the model already has a docblock, replace it with the new one
 		if ($hasOriginalDocBlock) {
-			$this->stringToBeWritten = str_replace($oldDocBlock, $this->modelData->classDocBlock, $this->stringToBeWritten);
+			$this->stringToBeWritten = str_replace($oldDocBlock, $this->modelData->getClassDocBlock(), $this->stringToBeWritten);
 		}
 
 		// Run "BeforeWrite" modules
@@ -206,7 +208,7 @@ class ModelLineWriter {
 	 * @param ModifiesClassDocBlock $module
 	 */
 	protected function modifyClassDocBlock(ModifiesClassDocBlock $module): void {
-		$this->modelData->classDocBlock = $module->classDocBlock();
+		$this->modelData->setClassDocBlock($module->classDocBlock());
 	}
 
 	/**
@@ -247,19 +249,19 @@ class ModelLineWriter {
 
 		$linesToIgnore = [
 			'/**',
-			"Abstract class $modelData->name",
-			"Interface $modelData->name",
-			"Class $modelData->name",
+			'Abstract class ' . $modelData->getName(),
+			'Interface ' . $modelData->getName(),
+			'Class ' . $modelData->getName(),
 			' * Properties:',
 			' * Relations:',
 			' * @property',
 		];
 
 
-		$properties = $modelData->properties;
-		$relations = $modelData->relations;
+		$properties = $modelData->getProperties();
+		$relations = $modelData->getRelations();
 
-		$originalDocBlock = explode(ModelAnalyzer::$newLine, $modelData->classDocBlock);
+		$originalDocBlock = explode(ModelAnalyzer::$newLine, $modelData->getClassDocBlock());
 
 		$class = ucfirst(ModelDocumenterHelper::getClassDeclaration($modelData));
 
@@ -332,7 +334,7 @@ class ModelLineWriter {
 			return $line . ModelAnalyzer::$newLine;
 		}, $newDocBlock);
 
-		$this->modelData->classDocBlock = implode('', $newDocBlock);
+		$this->modelData->setClassDocBlock(implode('', $newDocBlock));
 
 		foreach ($this->modules[ModifiesClassDocBlock::class] as $module) {
 			$module = $this->setupModule($module);
@@ -344,11 +346,11 @@ class ModelLineWriter {
 	 * @return bool
 	 */
 	protected function hasExistingDocBlock(): bool {
-		if (null === $this->modelData->classDocBlock) {
+		if (null === $this->modelData->getClassDocBlock()) {
 			return false;
 		}
 
-		$originalDocBlock = explode(ModelAnalyzer::$newLine, $this->modelData->classDocBlock);
+		$originalDocBlock = explode(ModelAnalyzer::$newLine, $this->modelData->getClassDocBlock());
 
 		if ((count($originalDocBlock) && $originalDocBlock[0] !== '') || count($originalDocBlock) > 1) {
 			return true;

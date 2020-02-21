@@ -11,10 +11,6 @@ use ReflectionClass;
 class ModelAnalyzer {
 	public static $newLine;
 
-	public const TYPE_INTERFACE = 1;
-	public const TYPE_CLASS = 2;
-	public const TYPE_ABSTRACT_CLASS = 3;
-
 	private const LINEENDING_CRLF = "\r\n";
 	private const LINEENDING_LFCR = "\n\r";
 	private const LINEENDING_CR = "\r";
@@ -54,7 +50,7 @@ class ModelAnalyzer {
 		$this->options = config('modeldocumenter.options');
 	}
 
-	public function analyze(string $filePath) {
+	public function analyze(string $filePath): ModelData {
 		$this->currentFile = $filePath;
 		$this->lines = $this->getLines($filePath);
 
@@ -67,18 +63,18 @@ class ModelAnalyzer {
 		$relations = $this->analyzeRelations($reflectionClass, $this->lines);
 
 		$properties = null;
-		if ($this->modelFileType === self::TYPE_CLASS) {
+		if ($this->modelFileType === ModelData::TYPE_CLASS) {
 			$tableName = $this->getTableName($reflectionClass);
 			$properties = $this->analyzeProperties($reflectionClass, $this->dbHelper->fetchColumnData($tableName));
 		}
 
-		
+
 		if ($properties) {
 			$properties = $this->sort($properties);
 		}
 		$relations = $this->sort($relations);
 
-		
+
 		$classDocBlock = $reflectionClass->getDocComment();
 
 		if (!$this->classDocBlockIsValid($classDocBlock)) {
@@ -87,16 +83,16 @@ class ModelAnalyzer {
 			$classDocBlock .= self::$newLine;
 		}
 
-		$modelData = (object) [
-			'name' => $classname,
-			'type' => $this->modelFileType,
-			'fileContents' => $this->lines,
-			'classDocBlock' => $classDocBlock,
-			'properties' => $properties ?? [],
-			'relations' => $relations,
-			'requiredImports' => $this->requiredImports,
-			'reflectionClass' => $reflectionClass,
-		];
+		$modelData = new ModelData(
+			$classname,
+			$this->modelFileType,
+			$this->lines,
+			$classDocBlock,
+			$properties ?? [],
+			$relations,
+			$this->requiredImports,
+			$reflectionClass
+		);
 
 		$this->reset();
 
@@ -277,7 +273,7 @@ class ModelAnalyzer {
 	protected function getName(): string {
 		foreach ($this->lines as $line) {
 			if (Str::startsWith($line, 'interface')) {
-				$this->modelFileType = self::TYPE_INTERFACE;
+				$this->modelFileType = ModelData::TYPE_INTERFACE;
 				$split = explode(' ', $line);
 
 				// $key + 1 should always be the interface name
@@ -285,10 +281,10 @@ class ModelAnalyzer {
 
 				return $split[$key + 1];
 			} elseif (Str::startsWith($line, 'abstract class ')) {
-				$this->modelFileType = self::TYPE_ABSTRACT_CLASS;
+				$this->modelFileType = ModelData::TYPE_ABSTRACT_CLASS;
 			} else {
 				if (Str::startsWith($line, 'class ')) {
-					$this->modelFileType = self::TYPE_CLASS;
+					$this->modelFileType = ModelData::TYPE_CLASS;
 				}
 			}
 

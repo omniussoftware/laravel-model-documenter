@@ -70,6 +70,7 @@ class ModelDocumenterCommand extends Command {
 
 		foreach ($files as $file) {
 			$modelData = $this->modelAnalyzer->analyze($file);
+
 			$newFileContents = (new ModelLineWriter($modelData))->replaceFileContents();
 
 			$fileHandle = fopen($file, 'w');
