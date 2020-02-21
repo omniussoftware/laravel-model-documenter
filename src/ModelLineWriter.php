@@ -249,11 +249,11 @@ class ModelLineWriter {
 
 		$linesToIgnore = [
 			'/**',
-			'Abstract class ' . $modelData->getName(),
-			'Interface ' . $modelData->getName(),
-			'Class ' . $modelData->getName(),
-			' * Properties:',
-			' * Relations:',
+			'abstract class ' . strtolower($modelData->getName()),
+			'interface ' . strtolower($modelData->getName()),
+			'class ' . strtolower($modelData->getName()),
+			' * properties:',
+			' * relations:',
 			' * @property',
 		];
 
@@ -280,7 +280,7 @@ class ModelLineWriter {
 			}
 
 			// If this isn't the end of the docblock or a @property line, we add it
-			if ($docBlockLine !== ' */' && !Str::contains($docBlockLine, $linesToIgnore)) {
+			if ($docBlockLine !== ' */' && !Str::contains(strtolower($docBlockLine), $linesToIgnore)) {
 				// Don't stack multiple "blank" lines"
 				if ($previousLine === ' *' && $docBlockLine === ' *') {
 					continue;
