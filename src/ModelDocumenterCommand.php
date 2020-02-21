@@ -53,7 +53,7 @@ class ModelDocumenterCommand extends Command {
 		$recursive = config('modeldocumenter.recursive');
 
 
-		if ($this->hasArgument('model')) {
+		if ($this->hasArgument('model') && null !== $this->argument('model')) {
 			$this->models = array_filter(explode(',', $this->argument('model')));
 			$this->foundModels = [];
 		}
