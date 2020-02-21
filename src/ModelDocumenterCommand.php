@@ -20,7 +20,8 @@ class ModelDocumenterCommand extends Command {
 	 */
 	protected $description = "Adds docblocks and such to Laravel models. Usage:\n\n"
 		.  "php artisan enz0project:model-documenter {model filename}\n\n"
-		.   "If {model filename} (i.e. 'User'), the command will only run on the file User.php. If omitted, it will run on all models.";
+		.   "If {model filename} (i.e. 'User'), the command will only run on the file User.php. If omitted, it will run on all models.\n"
+		.   "Note: You can run on multiple specific models by comma separating them, i.e. 'php artisan enz0project:model-documenter User,Post,Comment";
 
 	/** @var string */
 	private $singleModelFilename;
