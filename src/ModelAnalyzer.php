@@ -54,7 +54,7 @@ class ModelAnalyzer {
 		$this->options = config('modeldocumenter.options');
 	}
 
-	public function analyze(string $filePath) {
+	public function analyze(string $filePath): ModelData {
 		$this->currentFile = $filePath;
 		$this->lines = $this->getLines($filePath);
 
@@ -72,13 +72,13 @@ class ModelAnalyzer {
 			$properties = $this->analyzeProperties($reflectionClass, $this->dbHelper->fetchColumnData($tableName));
 		}
 
-		
+
 		if ($properties) {
 			$properties = $this->sort($properties);
 		}
 		$relations = $this->sort($relations);
 
-		
+
 		$classDocBlock = $reflectionClass->getDocComment();
 
 		if (!$this->classDocBlockIsValid($classDocBlock)) {
@@ -87,16 +87,16 @@ class ModelAnalyzer {
 			$classDocBlock .= self::$newLine;
 		}
 
-		$modelData = (object) [
-			'name' => $classname,
-			'type' => $this->modelFileType,
-			'fileContents' => $this->lines,
-			'classDocBlock' => $classDocBlock,
-			'properties' => $properties ?? [],
-			'relations' => $relations,
-			'requiredImports' => $this->requiredImports,
-			'reflectionClass' => $reflectionClass,
-		];
+		$modelData = new ModelData(
+			$classname,
+			$this->modelFileType,
+			$this->lines,
+			$classDocBlock,
+			$properties ?? [],
+			$relations,
+			$this->requiredImports,
+			$reflectionClass
+		);
 
 		$this->reset();
 
