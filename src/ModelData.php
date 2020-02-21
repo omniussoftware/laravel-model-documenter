@@ -5,6 +5,10 @@ namespace Enz0project\ModelDocumenter;
 
 
 class ModelData {
+	public const TYPE_INTERFACE = 1;
+	public const TYPE_CLASS = 2;
+	public const TYPE_ABSTRACT_CLASS = 3;
+
 	/** @var string */
 	private $name;
 	/** @var int */

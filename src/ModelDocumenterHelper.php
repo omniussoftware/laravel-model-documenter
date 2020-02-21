@@ -18,11 +18,11 @@ class ModelDocumenterHelper {
 	public static function getClassDeclaration(ModelData $modelData): string {
 		$type = '';
 
-		if ($modelData->getType() === ModelAnalyzer::TYPE_ABSTRACT_CLASS) {
+		if ($modelData->getType() === ModelData::TYPE_ABSTRACT_CLASS) {
 			$type = 'abstract class ';
-		} elseif ($modelData->getType() === ModelAnalyzer::TYPE_INTERFACE) {
+		} elseif ($modelData->getType() === ModelData::TYPE_INTERFACE) {
 			$type = 'interface ';
-		} elseif ($modelData->getType() === ModelAnalyzer::TYPE_CLASS) {
+		} elseif ($modelData->getType() === ModelData::TYPE_CLASS) {
 			$type = 'class ';
 		}
 

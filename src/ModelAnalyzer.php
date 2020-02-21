@@ -11,10 +11,6 @@ use ReflectionClass;
 class ModelAnalyzer {
 	public static $newLine;
 
-	public const TYPE_INTERFACE = 1;
-	public const TYPE_CLASS = 2;
-	public const TYPE_ABSTRACT_CLASS = 3;
-
 	private const LINEENDING_CRLF = "\r\n";
 	private const LINEENDING_LFCR = "\n\r";
 	private const LINEENDING_CR = "\r";
