@@ -20,13 +20,10 @@ class ModelDocumenterCommand extends Command {
 	 */
 	protected $description = "Adds docblocks and such to Laravel models. Usage:\n\n"
 		.  "php artisan enz0project:model-documenter {model filename}\n\n"
-		.   "If {model filename} (i.e. 'User'), the command will only run on the file User.php. If omitted, it will run on all models.\n\n"
-		.   "Note: You can run on multiple specific models by comma separating them, i.e. 'php artisan enz0project:model-documenter User,Post,Comment";
+		.   "If {model filename} (i.e. 'User'), the command will only run on the file User.php. If omitted, it will run on all models.";
 
-	/** @var array */
-	private $models;
-	/** @var array */
-	private $foundModels;
+	/** @var string */
+	private $singleModelFilename;
 
 	/**
 	 * @var ModelAnalyzer
@@ -49,28 +46,21 @@ class ModelDocumenterCommand extends Command {
 	 */
 	public function handle() {
 		$this->modelAnalyzer = new ModelAnalyzer();
+
+		if ($this->hasArgument('model')) {
+			$this->singleModelFilename = $this->argument('model');
+		}
+
 		$modelFolder = config('modeldocumenter.modelPath');
 		$recursive = config('modeldocumenter.recursive');
 
-
-		if ($this->hasArgument('model') && null !== $this->argument('model')) {
-			$this->models = array_filter(explode(',', $this->argument('model')));
-			$this->foundModels = [];
-		}
-
 		$files = $this->getModelFiles(realpath($modelFolder), $recursive);
-
-		// Warn if any models weren't found
-		if ($this->models) {
-			$this->printMissingModelWarnings();
-		}
 
 		$bar = $this->output->createProgressBar(count($files));
 		$bar->start();
 
 		foreach ($files as $file) {
 			$modelData = $this->modelAnalyzer->analyze($file);
-
 			$newFileContents = (new ModelLineWriter($modelData))->replaceFileContents();
 
 			$fileHandle = fopen($file, 'w');
@@ -98,43 +88,20 @@ class ModelDocumenterCommand extends Command {
 			foreach ($files as $file) {
 				$filePath = realpath($file);
 
+				// If we are in "single model mode" we just skip all files that arent the model we're looking for
+				if (null !== $this->singleModelFilename && $this->singleModelFilename !== '' && !Str::endsWith($filePath, "/$this->singleModelFilename.php")) {
+					continue;
+				}
+
 				if (!is_dir($filePath)) {
 					$results[] = $filePath;
 				} else {
 					$results = array_merge($results, $this->getFiles($filePath));
 				}
 			}
-		} else {
-			$results = $files;
 		}
 
-		$filteredModels = $this->filterOutUnwantedModels($results);
-
-		return $filteredModels;
-	}
-
-	/**
-	 * @param array $files
-	 * @return array
-	 */
-	protected function filterOutUnwantedModels(array $files): array {
-		if (null === $this->models) {
-			return $files;
-		}
-
-		return array_filter($files, function ($file) {
-			$filePath = realpath($file);
-			$filenameWithoutExtension = basename($filePath, '.php');
-
-			// If we are in "specific model mode" we just skip all files that aren't the models we're looking for
-			if (!in_array($filenameWithoutExtension, $this->models)) {
-				return false;
-			}
-
-			$this->foundModels[] = $filenameWithoutExtension;
-
-			return true;
-		});
+		return $recursive ? $results : $files;
 	}
 
 	/**
@@ -153,20 +120,5 @@ class ModelDocumenterCommand extends Command {
 		}, $files);
 
 		return $files;
-	}
-
-	/**
-	 * If in "specific models mode", prints warnings if any specified models were not found
-	 */
-	protected function printMissingModelWarnings(): void {
-		$missingModels = array_diff($this->models, $this->foundModels);
-
-		if (count($missingModels)) {
-			$this->error('Models not found:');
-
-			foreach ($missingModels as $missingModel) {
-				$this->error("* $missingModel");
-			}
-		}
 	}
 }

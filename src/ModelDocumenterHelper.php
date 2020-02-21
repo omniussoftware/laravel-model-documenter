@@ -12,21 +12,21 @@ class ModelDocumenterHelper {
 	/**
 	 * Gets the class declaration, i.e. "abstract class BaseModel" or "class User"
 	 *
-	 * @param ModelData $modelData
+	 * @param $modelData
 	 * @return string
 	 */
-	public static function getClassDeclaration(ModelData $modelData): string {
+	public static function getClassDeclaration($modelData): string {
 		$type = '';
 
-		if ($modelData->getType() === ModelData::TYPE_ABSTRACT_CLASS) {
+		if ($modelData->type === ModelAnalyzer::TYPE_ABSTRACT_CLASS) {
 			$type = 'abstract class ';
-		} elseif ($modelData->getType() === ModelData::TYPE_INTERFACE) {
+		} elseif ($modelData->type === ModelAnalyzer::TYPE_INTERFACE) {
 			$type = 'interface ';
-		} elseif ($modelData->getType() === ModelData::TYPE_CLASS) {
+		} elseif ($modelData->type === ModelAnalyzer::TYPE_CLASS) {
 			$type = 'class ';
 		}
 
-		$type .= $modelData->getName();
+		$type .= $modelData->name;
 
 		return $type;
 	}
