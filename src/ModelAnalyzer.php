@@ -63,7 +63,7 @@ class ModelAnalyzer {
 		$relations = $this->analyzeRelations($reflectionClass, $this->lines);
 
 		$properties = null;
-		if ($this->modelFileType === self::TYPE_CLASS) {
+		if ($this->modelFileType === ModelData::TYPE_CLASS) {
 			$tableName = $this->getTableName($reflectionClass);
 			$properties = $this->analyzeProperties($reflectionClass, $this->dbHelper->fetchColumnData($tableName));
 		}
@@ -273,7 +273,7 @@ class ModelAnalyzer {
 	protected function getName(): string {
 		foreach ($this->lines as $line) {
 			if (Str::startsWith($line, 'interface')) {
-				$this->modelFileType = self::TYPE_INTERFACE;
+				$this->modelFileType = ModelData::TYPE_INTERFACE;
 				$split = explode(' ', $line);
 
 				// $key + 1 should always be the interface name
@@ -281,10 +281,10 @@ class ModelAnalyzer {
 
 				return $split[$key + 1];
 			} elseif (Str::startsWith($line, 'abstract class ')) {
-				$this->modelFileType = self::TYPE_ABSTRACT_CLASS;
+				$this->modelFileType = ModelData::TYPE_ABSTRACT_CLASS;
 			} else {
 				if (Str::startsWith($line, 'class ')) {
-					$this->modelFileType = self::TYPE_CLASS;
+					$this->modelFileType = ModelData::TYPE_CLASS;
 				}
 			}
 
