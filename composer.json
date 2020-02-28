@@ -6,6 +6,7 @@
 		"Illuminate/Support": "^6.0",
 		"Illuminate/Console": "^6.0"
 	},
+	"license": "MIT",
 	"authors": [
 		{
 			"name": "Lars Bergvall",
