@@ -24,7 +24,10 @@ class ModelDocumenterProvider extends ServiceProvider {
 	 * @return void
 	 */
 	public function boot() {
-		$this->publishes([__DIR__.'/config' => base_path('config')]);
+		$this->publishes([
+			__DIR__ . '/config/modeldocumenter.php' => config_path('modeldocumenter.php')
+		], 'config');
+		
 		if ($this->app->runningInConsole()) {
 			$this->commands([ModelDocumenterCommand::class]);
 		}
