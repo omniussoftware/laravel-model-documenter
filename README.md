@@ -2,7 +2,7 @@
 
 ## Getting started
 
-`php artisan vendor:publish --provider="enz0project\ModelDocumenter\ModelDocumenterProvider"`
+`php artisan vendor:publish --provider="Enz0project\ModelDocumenter\ModelDocumenterProvider" --tag="config"`
 
 ## Running the command
 
@@ -11,7 +11,7 @@
 If you want to run the the model-documenter only on specific models, you can give it the filename without extension as an argument:
 `php artisan enz0project:model-documenter ForumThread` will make it run only on `ForumThread.php` in the models folder.
 If you want to run it on multiple, specific models, you can separate them by comma:
-`php artisan enz0project:model-documenter User,ForumThread,Post,Comment`
+`php artisan enz0project:model-documenter User,ForumThread,ForumPost,ForumComment`
 
 ## Docs
 
