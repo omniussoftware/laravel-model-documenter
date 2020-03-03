@@ -104,19 +104,19 @@ class ModelData {
 		string $name,
 		int $type,
 		array $fileContents,
-		string $classDocBlock,
-		array $properties,
+		?string $classDocBlock,
+		?array $properties,
 		?array $relations,
-		array $requiredImports,
+		?array $requiredImports,
 		\ReflectionClass $reflectionClass
 	) {
 		$this->name = $name;
 		$this->type = $type;
 		$this->fileContents = $fileContents;
-		$this->classDocBlock = $classDocBlock;
-		$this->properties = $properties;
-		$this->relations = $relations;
-		$this->requiredImports = $requiredImports;
+		$this->classDocBlock = $classDocBlock ?? '';
+		$this->properties = $properties ?? [];
+		$this->relations = $relations ?? [];
+		$this->requiredImports = $requiredImports ?? [];
 		$this->reflectionClass = $reflectionClass;
 	}
 
