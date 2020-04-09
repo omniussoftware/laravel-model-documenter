@@ -29,6 +29,7 @@
 		}
 	},
 	"require-dev": {
-		"orchestra/testbench": "^5.1"
+		"orchestra/testbench": "^5.1",
+		"mockery/mockery": "^1.3"
 	}
 }
