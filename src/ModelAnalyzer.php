@@ -4,9 +4,9 @@
 namespace Enz0project\ModelDocumenter;
 
 
-use Enz0project\ModelDocumenter\Exceptions\NoTableException;
 use Enz0project\ModelDocumenter\Interfaces\DBHelper;
 use Enz0project\ModelDocumenter\Interfaces\FileHelper;
+use Enz0project\ModelDocumenter\Interfaces\ReflectionHelper;
 use Exception;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -20,6 +20,8 @@ class ModelAnalyzer {
 	private const LINEENDING_LF = "\n";
 
 	protected DBHelper $dbHelper;
+	protected FileHelper $fileHelper;
+	protected ReflectionHelper $reflectionHelper;
 
 	private $traitRelationsCache = [];
 	private $requiredImports = [];
@@ -50,14 +52,15 @@ class ModelAnalyzer {
 		}
 
 		$this->dbHelper = app()->make(DBHelper::class);
+		$this->fileHelper = app()->make(FileHelper::class);
+		$this->reflectionHelper = app()->make(ReflectionHelper::class);
+
 		$this->options = config('modeldocumenter.options');
 	}
 
 	public function analyze(string $filePath): ModelData {
 		$this->currentFile = $filePath;
-		/** @var FileHelper $fileHelper */
-		$fileHelper = app()->make(FileHelper::class);
-		$this->lines = $fileHelper->getLines($filePath);
+		$this->lines = $this->fileHelper->getLines($filePath);
 
 		$classname = $this->getName();
 		$namespace = $this->getNamespaceFromFileContents($this->lines);
@@ -69,7 +72,7 @@ class ModelAnalyzer {
 
 		$properties = null;
 		if ($this->modelFileType === ModelData::TYPE_CLASS) {
-			$tableName = $this->getTableName($reflectionClass);
+			$tableName = $this->reflectionHelper->getTableName($reflectionClass);
 			$properties = $this->analyzeProperties($reflectionClass, $this->dbHelper->fetchColumnData($tableName));
 		}
 
@@ -147,25 +150,6 @@ class ModelAnalyzer {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Gets the table name from the $table property on the model
-	 *
-	 * @param ReflectionClass $reflectionClass
-	 * @return string
-	 * @throws \ReflectionException
-	 * @throws NoTableException
-	 */
-	protected function getTableName(ReflectionClass $reflectionClass): string {
-		$instance = $reflectionClass->newInstance();
-		$tableName = $instance->getTable();
-
-		if (null === $tableName) {
-			throw new NoTableException(sprintf('No table found in %s', $this->currentFile));
-		}
-
-		return $tableName;
 	}
 
 	/**

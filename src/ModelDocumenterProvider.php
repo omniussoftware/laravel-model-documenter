@@ -4,6 +4,7 @@ namespace Enz0project\ModelDocumenter;
 
 use Enz0project\ModelDocumenter\Interfaces\DBHelper;
 use Enz0project\ModelDocumenter\Interfaces\FileHelper;
+use Enz0project\ModelDocumenter\Interfaces\ReflectionHelper;
 use Illuminate\Support\ServiceProvider;
 
 class ModelDocumenterProvider extends ServiceProvider {
@@ -22,6 +23,12 @@ class ModelDocumenterProvider extends ServiceProvider {
 		if (!$this->app->bound(FileHelper::class)) {
 			$this->app->bind(FileHelper::class, function () {
 				return new DefaultFileHelper();
+			});
+		}
+
+		if (!$this->app->bound(ReflectionHelper::class)) {
+			$this->app->bind(ReflectionHelper::class, function () {
+				return new DefaultReflectionHelper();
 			});
 		}
 	}
