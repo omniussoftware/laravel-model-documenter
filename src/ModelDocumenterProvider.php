@@ -16,6 +16,12 @@ class ModelDocumenterProvider extends ServiceProvider {
 				return new MySQLDBHelper();
 			});
 		}
+
+		if (!$this->app->bound(FileHelper::class)) {
+			$this->app->bind(FileHelper::class, function () {
+				return new DefaultFileHelper();
+			});
+		}
 	}
 
 	/**
@@ -27,7 +33,7 @@ class ModelDocumenterProvider extends ServiceProvider {
 		$this->publishes([
 			__DIR__ . '/config/modeldocumenter.php' => config_path('modeldocumenter.php')
 		], 'config');
-		
+
 		if ($this->app->runningInConsole()) {
 			$this->commands([ModelDocumenterCommand::class]);
 		}
