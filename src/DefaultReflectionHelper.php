@@ -9,6 +9,9 @@ use Enz0project\ModelDocumenter\Interfaces\ReflectionHelper;
 use ReflectionClass;
 
 class DefaultReflectionHelper implements ReflectionHelper {
+	/**
+	 * { @inheritDoc }
+	 */
 	public function getTableName(ReflectionClass $reflectionClass): string {
 		$instance = $reflectionClass->newInstance();
 		$tableName = $instance->getTable();
@@ -20,7 +23,11 @@ class DefaultReflectionHelper implements ReflectionHelper {
 		return $tableName;
 	}
 
+	/**
+	 * { @inheritDoc }
+	 */
 	public function getDates(ReflectionClass $reflectionClass): array {
-		// TODO: Implement getDates() method.
+		$instance = $reflectionClass->newInstance();
+		return $instance->getDates();
 	}
 }

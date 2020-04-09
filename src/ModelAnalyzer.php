@@ -153,18 +153,6 @@ class ModelAnalyzer {
 	}
 
 	/**
-	 * Gets the dates array from a model
-	 *
-	 * @param ReflectionClass $reflectionClass
-	 * @return string
-	 * @throws \ReflectionException
-	 */
-	protected function getDates(ReflectionClass $reflectionClass): array {
-		$instance = $reflectionClass->newInstance();
-		return $instance->getDates();
-	}
-
-	/**
 	 * @param ReflectionClass $reflectionClass
 	 * @param array $lines
 	 * @return array
@@ -224,7 +212,7 @@ class ModelAnalyzer {
 	 * @throws \ReflectionException
 	 */
 	protected function analyzeProperties(ReflectionClass $reflectionClass, array $properties): array {
-		$dates = $this->getDates($reflectionClass);
+		$dates = $this->reflectionHelper->getDates($reflectionClass);
 		$propsToReturn = [];
 
 		$carbonString = config('modeldocumenter.importCarbon', false) ? 'Carbon' : '\Carbon\Carbon';

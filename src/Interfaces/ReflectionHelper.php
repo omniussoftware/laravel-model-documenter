@@ -18,6 +18,13 @@ interface ReflectionHelper {
 	 * @throws NoTableException
 	 */
 	public function getTableName(ReflectionClass $reflectionClass): string;
+	/**
+	 * Gets the dates array from a model
+	 *
+	 * @param ReflectionClass $reflectionClass
+	 * @return string
+	 * @throws \ReflectionException
+	 */
 	public function getDates(ReflectionClass $reflectionClass): array;
 
 }
