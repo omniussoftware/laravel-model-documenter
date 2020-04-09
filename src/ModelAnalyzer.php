@@ -239,7 +239,8 @@ class ModelAnalyzer {
 		$dates = $this->getDates($reflectionClass);
 		$propsToReturn = [];
 
-		$carbonString = config('modeldocumenter.importCarbon', false) ? 'Carbon' : 'Carbon\Carbon';
+		$carbonString = config('modeldocumenter.importCarbon', false) ? 'Carbon' : '\Carbon\Carbon';
+		$nullableCarbonString = $carbonString . '|null';
 
 		foreach ($properties as $property) {
 			$phpType = $this->dbHelper->dbTypeToPHP($property);
@@ -248,14 +249,13 @@ class ModelAnalyzer {
 			if ($phpType === 'int' && in_array($propName, $dates)) {
 				$phpType = $carbonString;
 			} elseif ($phpType === 'int|null' && in_array($propName, $dates)) {
-				$phpType = $carbonString . '|null';
+				$phpType = $nullableCarbonString;
 			}
 
 			$propsToReturn[$propName] = $phpType;
 
-
 			// If the model uses a Carbon we need to either import or fully qualify them with namespace
-			if ($phpType === 'Carbon' && !in_array('Carbon', $this->requiredImports)) {
+			if (($phpType === $carbonString || $phpType === $nullableCarbonString) && !in_array('Carbon', $this->requiredImports)) {
 				$this->requiredImports[] = 'Carbon';
 			}
 		}
