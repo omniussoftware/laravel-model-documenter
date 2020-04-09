@@ -4,6 +4,7 @@
 namespace Enz0project\ModelDocumenter;
 
 
+use Enz0project\ModelDocumenter\Exceptions\NoTableException;
 use Exception;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -150,13 +151,15 @@ class ModelAnalyzer {
 	 * @param ReflectionClass $reflectionClass
 	 * @return string
 	 * @throws \ReflectionException
+	 * @throws NoTableException
 	 */
 	protected function getTableName(ReflectionClass $reflectionClass): string {
 		$instance = $reflectionClass->newInstance();
-		$table = $reflectionClass->getProperty('table');
-		$table->setAccessible(true);
-		$tableName = $table->getValue($instance);
-		$table->setAccessible(false);
+		$tableName = $instance->getTable();
+
+		if (null === $tableName) {
+			throw new NoTableException(sprintf('No table found in %s', $this->currentFile));
+		}
 
 		return $tableName;
 	}
