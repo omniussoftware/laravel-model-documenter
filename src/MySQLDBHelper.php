@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class MySQLDBHelper implements DBHelper {
+	private string $carbonString;
+
+	public function __construct() {
+		$this->carbonString = config('modeldocumenter.importCarbon', false) ? 'Carbon' : '\Carbon\Carbon';
+	}
+
 	/**
 	 * { @inheritDoc }
 	 */
@@ -32,7 +38,7 @@ class MySQLDBHelper implements DBHelper {
 			|| Str::contains($mysqlType, 'enum')) {
 			$phpType = 'string';
 		} elseif (Str::contains($mysqlType, 'timestamp') || Str::contains($mysqlType, 'datetime')) {
-			$phpType = 'Carbon';
+			$phpType = $this->carbonString;
 		} elseif (Str::contains($mysqlType, 'decimal')) {
 			$phpType = 'float';
 		}

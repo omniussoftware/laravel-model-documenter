@@ -4,6 +4,7 @@
 namespace Enz0project\ModelDocumenter;
 
 
+use Enz0project\ModelDocumenter\Exceptions\NoTableException;
 use Exception;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -52,7 +53,9 @@ class ModelAnalyzer {
 
 	public function analyze(string $filePath): ModelData {
 		$this->currentFile = $filePath;
-		$this->lines = $this->getLines($filePath);
+		/** @var FileHelper $fileHelper */
+		$fileHelper = app()->make(FileHelper::class);
+		$this->lines = $fileHelper->getLines($filePath);
 
 		$classname = $this->getName();
 		$namespace = $this->getNamespaceFromFileContents($this->lines);
@@ -150,13 +153,15 @@ class ModelAnalyzer {
 	 * @param ReflectionClass $reflectionClass
 	 * @return string
 	 * @throws \ReflectionException
+	 * @throws NoTableException
 	 */
 	protected function getTableName(ReflectionClass $reflectionClass): string {
 		$instance = $reflectionClass->newInstance();
-		$table = $reflectionClass->getProperty('table');
-		$table->setAccessible(true);
-		$tableName = $table->getValue($instance);
-		$table->setAccessible(false);
+		$tableName = $instance->getTable();
+
+		if (null === $tableName) {
+			throw new NoTableException(sprintf('No table found in %s', $this->currentFile));
+		}
 
 		return $tableName;
 	}
@@ -170,12 +175,7 @@ class ModelAnalyzer {
 	 */
 	protected function getDates(ReflectionClass $reflectionClass): array {
 		$instance = $reflectionClass->newInstance();
-		$dates = $reflectionClass->getProperty('dates');
-		$dates->setAccessible(true);
-		$datesValue = $dates->getValue($instance);
-		$dates->setAccessible(false);
-
-		return $datesValue;
+		return $instance->getDates();
 	}
 
 	/**
@@ -241,22 +241,23 @@ class ModelAnalyzer {
 		$dates = $this->getDates($reflectionClass);
 		$propsToReturn = [];
 
+		$carbonString = config('modeldocumenter.importCarbon', false) ? 'Carbon' : '\Carbon\Carbon';
+		$nullableCarbonString = $carbonString . '|null';
+
 		foreach ($properties as $property) {
 			$phpType = $this->dbHelper->dbTypeToPHP($property);
 			$propName = $property->Field;
-
 			// If the prop is an integer and the property is in the $dates array, it is a Carbon
 			if ($phpType === 'int' && in_array($propName, $dates)) {
-				$phpType = 'Carbon';
+				$phpType = $carbonString;
 			} elseif ($phpType === 'int|null' && in_array($propName, $dates)) {
-				$phpType = 'Carbon|null';
+				$phpType = $nullableCarbonString;
 			}
 
 			$propsToReturn[$propName] = $phpType;
 
-
 			// If the model uses a Carbon we need to either import or fully qualify them with namespace
-			if ($phpType === 'Carbon' && !in_array('Carbon', $this->requiredImports)) {
+			if (($phpType === $carbonString || $phpType === $nullableCarbonString) && !in_array('Carbon', $this->requiredImports)) {
 				$this->requiredImports[] = 'Carbon';
 			}
 		}
@@ -351,25 +352,5 @@ class ModelAnalyzer {
 		$this->lines = null;
 		$this->traitsInModel = null;
 		$this->requiredImports = [];
-	}
-
-	/**
-	 * Reads file content into an array
-	 *
-	 * @param string $filePath
-	 * @return array
-	 */
-	private function getLines(string $filePath): array {
-		$file = fopen($filePath, 'r');
-
-		$lines = [];
-
-		while (!feof($file)) {
-			$lines[] = fgets($file);
-		}
-
-		fclose($file);
-
-		return $lines;
 	}
 }

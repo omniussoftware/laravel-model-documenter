@@ -67,6 +67,7 @@ class ModelLineWriter {
 		$classDeclarationString = ModelDocumenterHelper::getClassDeclaration($this->modelData);
 		$hasOriginalDocBlock = $this->hasExistingDocBlock();
 		$oldDocBlock = $this->modelData->getClassDocBlock();
+		$useStatements = '';
 
 		$this->buildClassDocBlock();
 
@@ -80,6 +81,11 @@ class ModelLineWriter {
 					&& Str::contains($previousLine, ' */') && $key !== count($this->modelData->getFileContents()) - 1
 					&& Str::startsWith($this->modelData->getFileContents()[$key + 1], $classDeclarationString)) {
 				continue;
+			}
+
+			// Store use statements
+			if (!$isInsideClass && Str::startsWith($line, 'use ')) {
+				$useStatements .= $line;
 			}
 
 			if (!$isInsideClass && Str::startsWith($line, $classDeclarationString)) {
@@ -129,6 +135,10 @@ class ModelLineWriter {
 		foreach ($this->modules[BeforeWrite::class] as $module) {
 			$module = $this->setupModule($module);
 			$this->runModule($module);
+		}
+
+		if (config('modeldocumenter.importCarbon', false) && in_array('Carbon', $this->modelData->getRequiredImports())) {
+			$this->stringToBeWritten = $this->importCarbon($this->stringToBeWritten, $useStatements);
 		}
 
 		return $this->stringToBeWritten;
@@ -213,7 +223,7 @@ class ModelLineWriter {
 
 	/**
 	 * Modifies $this->lines with the result of a ModifiesLines module
-	 * 
+	 *
 	 * @param ModifiesLines $module
 	 */
 	protected function modifyLines(ModifiesLines $module): void {
@@ -371,5 +381,19 @@ class ModelLineWriter {
 
 			$this->modules[$type][] = $instance;
 		}
+	}
+
+	/**
+	 * @param string $stringToBeWritten
+	 * @return string
+	 */
+	protected function importCarbon(string $stringToBeWritten, string $useStatements): string {
+		if (Str::contains($useStatements, 'Carbon\Carbon;')) {
+			return $stringToBeWritten;
+		}
+
+		$replacedUseStatements = 'use Carbon\Carbon;' . ModelAnalyzer::$newLine . $useStatements;
+
+		return str_replace($useStatements, $replacedUseStatements, $stringToBeWritten);
 	}
 }
