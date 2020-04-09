@@ -105,7 +105,8 @@ class ModelDocumenterCommand extends Command {
 				}
 			}
 		} else {
-			$results = $files;
+			// Filter out any directories
+			$results = array_filter($files, static fn (string $file) => !is_dir($file));
 		}
 
 		$filteredModels = $this->filterOutUnwantedModels($results);
