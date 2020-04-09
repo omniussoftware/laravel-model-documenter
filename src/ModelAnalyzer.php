@@ -5,6 +5,8 @@ namespace Enz0project\ModelDocumenter;
 
 
 use Enz0project\ModelDocumenter\Exceptions\NoTableException;
+use Enz0project\ModelDocumenter\Interfaces\DBHelper;
+use Enz0project\ModelDocumenter\Interfaces\FileHelper;
 use Exception;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -17,7 +19,7 @@ class ModelAnalyzer {
 	private const LINEENDING_CR = "\r";
 	private const LINEENDING_LF = "\n";
 
-	protected $dbHelper;
+	protected DBHelper $dbHelper;
 
 	private $traitRelationsCache = [];
 	private $requiredImports = [];

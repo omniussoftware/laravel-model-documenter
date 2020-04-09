@@ -2,6 +2,8 @@
 
 namespace Enz0project\ModelDocumenter;
 
+use Enz0project\ModelDocumenter\Interfaces\DBHelper;
+use Enz0project\ModelDocumenter\Interfaces\FileHelper;
 use Illuminate\Support\ServiceProvider;
 
 class ModelDocumenterProvider extends ServiceProvider {

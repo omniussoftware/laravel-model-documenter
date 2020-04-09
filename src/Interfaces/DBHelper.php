@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Enz0project\ModelDocumenter;
+namespace Enz0project\ModelDocumenter\Interfaces;
 
 
 interface DBHelper {
