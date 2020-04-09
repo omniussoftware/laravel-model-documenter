@@ -246,6 +246,7 @@ class ModelAnalyzer {
 	 * @throws Exception
 	 */
 	protected function getName(): string {
+		// TODO: Refactor move this to a FileContentsAnalyzer class
 		foreach ($this->lines as $line) {
 			if (Str::startsWith($line, 'interface')) {
 				$this->modelFileType = ModelData::TYPE_INTERFACE;
@@ -287,6 +288,7 @@ class ModelAnalyzer {
 	 * @throws Exception
 	 */
 	protected function getNamespaceFromFileContents(array $lines): string {
+		// TODO: Refactor move this to a FileContentsAnalyzer class
 		foreach ($lines as $line) {
 			if (Str::startsWith($line, 'namespace ')) {
 				$split = explode(' ', $line);
