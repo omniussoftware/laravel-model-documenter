@@ -8,7 +8,7 @@ class DefaultFileHelper implements FileHelper {
 	/**
 	 * { @inheritDoc }
 	 */
-	private function getLines(string $filePath): array {
+	public function getLines(string $filePath): array {
 		$file = fopen($filePath, 'r');
 
 		$lines = [];
