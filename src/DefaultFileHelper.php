@@ -4,6 +4,8 @@
 namespace Enz0project\ModelDocumenter;
 
 
+use Enz0project\ModelDocumenter\Interfaces\FileHelper;
+
 class DefaultFileHelper implements FileHelper {
 	/**
 	 * { @inheritDoc }
