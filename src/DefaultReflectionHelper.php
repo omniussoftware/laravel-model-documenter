@@ -30,4 +30,17 @@ class DefaultReflectionHelper implements ReflectionHelper {
 		$instance = $reflectionClass->newInstance();
 		return $instance->getDates();
 	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getClassType(ReflectionClass $reflectionClass): int {
+		if ($reflectionClass->isAbstract()) {
+			return ModelData::TYPE_ABSTRACT_CLASS;
+		} elseif ($reflectionClass->isInterface()) {
+			return ModelData::TYPE_INTERFACE;
+		}
+
+		return ModelData::TYPE_CLASS;
+	}
 }

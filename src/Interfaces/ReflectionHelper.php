@@ -27,4 +27,10 @@ interface ReflectionHelper {
 	 */
 	public function getDates(ReflectionClass $reflectionClass): array;
 
+	/**
+	 * Returns this "class type" (interface|abstract|class)
+	 * @param ReflectionClass $reflectionClass
+	 * @return int ModelData::TYPE_CLASS|ModelData::TYPE_INTERFACE|ModelData::TYPE_ABSTRACT_CLASS
+	 */
+	public function getClassType(ReflectionClass $reflectionClass): int;
 }

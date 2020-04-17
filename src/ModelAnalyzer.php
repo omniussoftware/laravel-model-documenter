@@ -5,6 +5,7 @@ namespace Enz0project\ModelDocumenter;
 
 
 use Enz0project\ModelDocumenter\Interfaces\DBHelper;
+use Enz0project\ModelDocumenter\Interfaces\FileContentsAnalyzer;
 use Enz0project\ModelDocumenter\Interfaces\FileHelper;
 use Enz0project\ModelDocumenter\Interfaces\ReflectionHelper;
 use Exception;
@@ -22,6 +23,7 @@ class ModelAnalyzer {
 	protected DBHelper $dbHelper;
 	protected FileHelper $fileHelper;
 	protected ReflectionHelper $reflectionHelper;
+	protected FileContentsAnalyzer $fileContentsAnalyzer;
 
 	private $traitRelationsCache = [];
 	private $requiredImports = [];
@@ -54,6 +56,7 @@ class ModelAnalyzer {
 		$this->dbHelper = app()->make(DBHelper::class);
 		$this->fileHelper = app()->make(FileHelper::class);
 		$this->reflectionHelper = app()->make(ReflectionHelper::class);
+		$this->fileContentsAnalyzer = app()->make(FileContentsAnalyzer::class);
 
 		$this->options = config('modeldocumenter.options');
 	}
@@ -62,10 +65,11 @@ class ModelAnalyzer {
 		$this->currentFile = $filePath;
 		$this->lines = $this->fileHelper->getLines($filePath);
 
-		$classname = $this->getName();
-		$namespace = $this->getNamespaceFromFileContents($this->lines);
+		$classname = $this->fileContentsAnalyzer->getName($this->lines);
+		$namespace = $this->fileContentsAnalyzer->getNamespace($this->lines);
 
 		$reflectionClass = new ReflectionClass("$namespace\\$classname");
+		$this->modelFileType = $this->reflectionHelper->getClassType($reflectionClass);
 
 		// Get all relations from this class as well as any traits it has
 		$relations = $this->analyzeRelations($reflectionClass, $this->lines);
@@ -237,70 +241,6 @@ class ModelAnalyzer {
 		}
 
 		return $propsToReturn;
-	}
-
-	/**
-	 * Gets the name (and sets type) of the interface/class
-	 *
-	 * @return string
-	 * @throws Exception
-	 */
-	protected function getName(): string {
-		// TODO: Refactor move this to a FileContentsAnalyzer class
-		foreach ($this->lines as $line) {
-			if (Str::startsWith($line, 'interface')) {
-				$this->modelFileType = ModelData::TYPE_INTERFACE;
-				$split = explode(' ', $line);
-
-				// $key + 1 should always be the interface name
-				$key = array_search('interface', $split);
-
-				return $split[$key + 1];
-			} elseif (Str::startsWith($line, 'abstract class ')) {
-				$this->modelFileType = ModelData::TYPE_ABSTRACT_CLASS;
-			} else {
-				if (Str::startsWith($line, 'class ')) {
-					$this->modelFileType = ModelData::TYPE_CLASS;
-				}
-			}
-
-			if (null === $this->modelFileType) {
-				continue;
-			}
-
-			$split = explode(' ', $line);
-
-			// $key + 1 should always be the class name
-			$key = array_search('class', $split);
-
-			return $split[$key + 1];
-		}
-
-		if (null === $this->modelFileType) {
-			throw new Exception("Could not extract class/interface name from file $this->currentFile");
-		}
-	}
-
-	/**
-	 * Reads namespace of Model file
-	 *
-	 * @return string
-	 * @throws Exception
-	 */
-	protected function getNamespaceFromFileContents(array $lines): string {
-		// TODO: Refactor move this to a FileContentsAnalyzer class
-		foreach ($lines as $line) {
-			if (Str::startsWith($line, 'namespace ')) {
-				$split = explode(' ', $line);
-				$key = array_search('namespace', $split);
-
-				if (count($split) < $key + 1) {
-					throw new Exception("Could not extract namespace from file $this->currentFile");
-				}
-
-				return str_replace([';', "\n", "\r"], '', $split[$key + 1]);
-			}
-		}
 	}
 
 	/**
