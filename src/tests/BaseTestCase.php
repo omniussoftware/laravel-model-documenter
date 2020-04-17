@@ -3,6 +3,9 @@
 namespace Enz0project\ModelDocumenter\Tests;
 
 class BaseTestCase extends \Orchestra\Testbench\TestCase {
+	protected const PACKAGE_ROOT = __DIR__ . '/../';
+	protected const STUBS = __DIR__ . '/../teststubs/';
+
 	protected function setUp(): void {
 		parent::setUp();
 	}
