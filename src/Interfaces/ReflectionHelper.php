@@ -35,7 +35,7 @@ interface ReflectionHelper {
 	public function getClassType(ReflectionClass $reflectionClass): int;
 	/**
 	 * @param ReflectionClass $reflectionClass
-	 * @return array
+	 * @return array associative array containing keys 'properties' and 'requiredImports'
 	 * @throws \ReflectionException
 	 */
 	public function getProperties(ReflectionClass $reflectionClass): array;
