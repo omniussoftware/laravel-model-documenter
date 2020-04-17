@@ -24,7 +24,6 @@ class ModelAnalyzer {
 	protected ReflectionHelper $reflectionHelper;
 	protected FileContentsAnalyzer $fileContentsAnalyzer;
 
-	private $traitRelationsCache = [];
 	private $requiredImports = [];
 	private $lines;
 	private $currentFile;
