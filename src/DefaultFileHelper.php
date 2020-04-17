@@ -4,11 +4,13 @@
 namespace Enz0project\ModelDocumenter;
 
 
+use Enz0project\ModelDocumenter\Interfaces\FileHelper;
+
 class DefaultFileHelper implements FileHelper {
 	/**
 	 * { @inheritDoc }
 	 */
-	private function getLines(string $filePath): array {
+	public function getLines(string $filePath): array {
 		$file = fopen($filePath, 'r');
 
 		$lines = [];

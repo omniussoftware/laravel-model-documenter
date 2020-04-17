@@ -4,6 +4,7 @@
 namespace Enz0project\ModelDocumenter;
 
 
+use Enz0project\ModelDocumenter\Interfaces\DBHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 

@@ -4,8 +4,10 @@
 namespace Enz0project\ModelDocumenter;
 
 
-use Enz0project\ModelDocumenter\Exceptions\NoTableException;
-use Exception;
+use Enz0project\ModelDocumenter\Interfaces\DBHelper;
+use Enz0project\ModelDocumenter\Interfaces\FileContentsAnalyzer;
+use Enz0project\ModelDocumenter\Interfaces\FileHelper;
+use Enz0project\ModelDocumenter\Interfaces\ReflectionHelper;
 use Illuminate\Support\Str;
 use ReflectionClass;
 
@@ -17,15 +19,16 @@ class ModelAnalyzer {
 	private const LINEENDING_CR = "\r";
 	private const LINEENDING_LF = "\n";
 
-	protected $dbHelper;
+	protected DBHelper $dbHelper;
+	protected FileHelper $fileHelper;
+	protected ReflectionHelper $reflectionHelper;
+	protected FileContentsAnalyzer $fileContentsAnalyzer;
 
-	private $traitRelationsCache = [];
-	private $requiredImports = [];
-	private $lines;
-	private $currentFile;
-	private $modelFileType;
-	private $traitsInModel;
-	private $options;
+	private array $requiredImports = [];
+	private ?array $lines;
+	private ?string $currentFile;
+	private ?int $modelFileType;
+	private array $options;
 
 	public function __construct() {
 		if (!self::$newLine) {
@@ -48,27 +51,34 @@ class ModelAnalyzer {
 		}
 
 		$this->dbHelper = app()->make(DBHelper::class);
+		$this->fileHelper = app()->make(FileHelper::class);
+		$this->reflectionHelper = app()->make(ReflectionHelper::class);
+		$this->fileContentsAnalyzer = app()->make(FileContentsAnalyzer::class);
+
 		$this->options = config('modeldocumenter.options');
 	}
 
 	public function analyze(string $filePath): ModelData {
 		$this->currentFile = $filePath;
-		/** @var FileHelper $fileHelper */
-		$fileHelper = app()->make(FileHelper::class);
-		$this->lines = $fileHelper->getLines($filePath);
+		$this->lines = $this->fileHelper->getLines($filePath);
 
-		$classname = $this->getName();
-		$namespace = $this->getNamespaceFromFileContents($this->lines);
+		$classname = $this->fileContentsAnalyzer->getName($this->lines);
+		$namespace = $this->fileContentsAnalyzer->getNamespace($this->lines);
 
 		$reflectionClass = new ReflectionClass("$namespace\\$classname");
+		$this->modelFileType = $this->reflectionHelper->getClassType($reflectionClass);
 
-		// Get all relations from this class as well as any traits it has
-		$relations = $this->analyzeRelations($reflectionClass, $this->lines);
+		// Get all relations from this class
+		$relationData = $this->reflectionHelper->getRelations($reflectionClass, $this->lines);
+		$relations = $relationData['relations'];
+		$this->requiredImports = $relationData['requiredImports'];
 
 		$properties = null;
 		if ($this->modelFileType === ModelData::TYPE_CLASS) {
-			$tableName = $this->getTableName($reflectionClass);
-			$properties = $this->analyzeProperties($reflectionClass, $this->dbHelper->fetchColumnData($tableName));
+			$propertyData = $this->reflectionHelper->getProperties($reflectionClass);
+
+			$properties = $propertyData['properties'];
+			$this->requiredImports = array_merge($this->requiredImports, $propertyData['requiredImports']);
 		}
 
 
@@ -148,209 +158,12 @@ class ModelAnalyzer {
 	}
 
 	/**
-	 * Gets the table name from the $table property on the model
-	 *
-	 * @param ReflectionClass $reflectionClass
-	 * @return string
-	 * @throws \ReflectionException
-	 * @throws NoTableException
-	 */
-	protected function getTableName(ReflectionClass $reflectionClass): string {
-		$instance = $reflectionClass->newInstance();
-		$tableName = $instance->getTable();
-
-		if (null === $tableName) {
-			throw new NoTableException(sprintf('No table found in %s', $this->currentFile));
-		}
-
-		return $tableName;
-	}
-
-	/**
-	 * Gets the dates array from a model
-	 *
-	 * @param ReflectionClass $reflectionClass
-	 * @return string
-	 * @throws \ReflectionException
-	 */
-	protected function getDates(ReflectionClass $reflectionClass): array {
-		$instance = $reflectionClass->newInstance();
-		return $instance->getDates();
-	}
-
-	/**
-	 * @param ReflectionClass $reflectionClass
-	 * @param array $lines
-	 * @return array
-	 * @throws Exception
-	 */
-	protected function analyzeRelations(ReflectionClass $reflectionClass, array $lines): array {
-		$methods = $reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC);
-		$this->traitsInModel = $reflectionClass->getTraits();
-
-		$relations = [];
-
-		foreach ($methods as $method) {
-			$currMethod = $method;
-
-			// If the class declaring this method isn't the model we're inside now, we skip over it; for now.
-			$methodClassName = $method->getDeclaringClass()->getName();
-
-			if ($reflectionClass->getName() !== $methodClassName) {
-				continue;
-			}
-
-			$methodName = $method->getName();
-
-			// If this method comes from a trait, we skip it for now; it will be handled later
-			if ($this->methodIsInTrait($methodName)) {
-				continue;
-			}
-
-			$startLine = $method->getStartLine();
-			$endLine = $method->getEndLine();
-
-			for ($i = $startLine; $i < $endLine; $i++) {
-				$line = trim($lines[$i]);
-
-				// TODO: Maybe add support for returns where the returned thing is on the line below the 'return' keyword
-				if (Str::startsWith($line, 'return ')) {
-					$relatedClassName = ModelDocumenterHelper::getRelatedClassName($line);
-					if (null !== $relatedClassName) {
-						$relations[$methodName] = $relatedClassName;
-					}
-
-					// If the model uses a Collection we need to either import or fully qualify them with namespace
-					if (Str::startsWith($relatedClassName, 'Collection|') && !in_array('Collection', $this->requiredImports)) {
-						$this->requiredImports[] = 'Collection';
-					}
-				}
-			}
-		}
-
-		return $relations;
-	}
-
-	/**
-	 * @param ReflectionClass $reflectionClass
-	 * @param array $properties
-	 * @return array
-	 * @throws \ReflectionException
-	 */
-	protected function analyzeProperties(ReflectionClass $reflectionClass, array $properties): array {
-		$dates = $this->getDates($reflectionClass);
-		$propsToReturn = [];
-
-		$carbonString = config('modeldocumenter.importCarbon', false) ? 'Carbon' : '\Carbon\Carbon';
-		$nullableCarbonString = $carbonString . '|null';
-
-		foreach ($properties as $property) {
-			$phpType = $this->dbHelper->dbTypeToPHP($property);
-			$propName = $property->Field;
-			// If the prop is an integer and the property is in the $dates array, it is a Carbon
-			if ($phpType === 'int' && in_array($propName, $dates)) {
-				$phpType = $carbonString;
-			} elseif ($phpType === 'int|null' && in_array($propName, $dates)) {
-				$phpType = $nullableCarbonString;
-			}
-
-			$propsToReturn[$propName] = $phpType;
-
-			// If the model uses a Carbon we need to either import or fully qualify them with namespace
-			if (($phpType === $carbonString || $phpType === $nullableCarbonString) && !in_array('Carbon', $this->requiredImports)) {
-				$this->requiredImports[] = 'Carbon';
-			}
-		}
-
-		return $propsToReturn;
-	}
-
-	/**
-	 * Gets the name (and sets type) of the interface/class
-	 *
-	 * @return string
-	 * @throws Exception
-	 */
-	protected function getName(): string {
-		foreach ($this->lines as $line) {
-			if (Str::startsWith($line, 'interface')) {
-				$this->modelFileType = ModelData::TYPE_INTERFACE;
-				$split = explode(' ', $line);
-
-				// $key + 1 should always be the interface name
-				$key = array_search('interface', $split);
-
-				return $split[$key + 1];
-			} elseif (Str::startsWith($line, 'abstract class ')) {
-				$this->modelFileType = ModelData::TYPE_ABSTRACT_CLASS;
-			} else {
-				if (Str::startsWith($line, 'class ')) {
-					$this->modelFileType = ModelData::TYPE_CLASS;
-				}
-			}
-
-			if (null === $this->modelFileType) {
-				continue;
-			}
-
-			$split = explode(' ', $line);
-
-			// $key + 1 should always be the class name
-			$key = array_search('class', $split);
-
-			return $split[$key + 1];
-		}
-
-		if (null === $this->modelFileType) {
-			throw new Exception("Could not extract class/interface name from file $this->currentFile");
-		}
-	}
-
-	/**
-	 * Reads namespace of Model file
-	 *
-	 * @return string
-	 * @throws Exception
-	 */
-	protected function getNamespaceFromFileContents(array $lines): string {
-		foreach ($lines as $line) {
-			if (Str::startsWith($line, 'namespace ')) {
-				$split = explode(' ', $line);
-				$key = array_search('namespace', $split);
-
-				if (count($split) < $key + 1) {
-					throw new Exception("Could not extract namespace from file $this->currentFile");
-				}
-
-				return str_replace([';', "\n", "\r"], '', $split[$key + 1]);
-			}
-		}
-	}
-
-	/**
-	 * Checks if any of the models traits have a specific method
-	 *
-	 * @param $method
-	 * @return bool
-	 */
-	private function methodIsInTrait($method): bool {
-		foreach ($this->traitsInModel as $trait) {
-			if ($trait->hasMethod($method)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 * Resets the model analyzer so it's ready for the next file
 	 */
 	private function reset() {
 		$this->currentFile = null;
 		$this->modelFileType = null;
 		$this->lines = null;
-		$this->traitsInModel = null;
 		$this->requiredImports = [];
 	}
 }
