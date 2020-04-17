@@ -33,4 +33,10 @@ interface ReflectionHelper {
 	 * @return int ModelData::TYPE_CLASS|ModelData::TYPE_INTERFACE|ModelData::TYPE_ABSTRACT_CLASS
 	 */
 	public function getClassType(ReflectionClass $reflectionClass): int;
+	/**
+	 * @param ReflectionClass $reflectionClass
+	 * @return array
+	 * @throws \ReflectionException
+	 */
+	public function getProperties(ReflectionClass $reflectionClass): array;
 }

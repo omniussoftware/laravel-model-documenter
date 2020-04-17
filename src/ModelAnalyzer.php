@@ -76,8 +76,10 @@ class ModelAnalyzer {
 
 		$properties = null;
 		if ($this->modelFileType === ModelData::TYPE_CLASS) {
-			$tableName = $this->reflectionHelper->getTableName($reflectionClass);
-			$properties = $this->analyzeProperties($reflectionClass, $this->dbHelper->fetchColumnData($tableName));
+			$propertyData = $this->reflectionHelper->getProperties($reflectionClass);
+
+			$properties = $propertyData['properties'];
+			$this->requiredImports = $propertyData['requiredImports'];
 		}
 
 
@@ -207,40 +209,6 @@ class ModelAnalyzer {
 		}
 
 		return $relations;
-	}
-
-	/**
-	 * @param ReflectionClass $reflectionClass
-	 * @param array $properties
-	 * @return array
-	 * @throws \ReflectionException
-	 */
-	protected function analyzeProperties(ReflectionClass $reflectionClass, array $properties): array {
-		$dates = $this->reflectionHelper->getDates($reflectionClass);
-		$propsToReturn = [];
-
-		$carbonString = config('modeldocumenter.importCarbon', false) ? 'Carbon' : '\Carbon\Carbon';
-		$nullableCarbonString = $carbonString . '|null';
-
-		foreach ($properties as $property) {
-			$phpType = $this->dbHelper->dbTypeToPHP($property);
-			$propName = $property->Field;
-			// If the prop is an integer and the property is in the $dates array, it is a Carbon
-			if ($phpType === 'int' && in_array($propName, $dates)) {
-				$phpType = $carbonString;
-			} elseif ($phpType === 'int|null' && in_array($propName, $dates)) {
-				$phpType = $nullableCarbonString;
-			}
-
-			$propsToReturn[$propName] = $phpType;
-
-			// If the model uses a Carbon we need to either import or fully qualify them with namespace
-			if (($phpType === $carbonString || $phpType === $nullableCarbonString) && !in_array('Carbon', $this->requiredImports)) {
-				$this->requiredImports[] = 'Carbon';
-			}
-		}
-
-		return $propsToReturn;
 	}
 
 	/**
