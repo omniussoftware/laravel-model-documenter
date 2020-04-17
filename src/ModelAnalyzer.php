@@ -24,11 +24,11 @@ class ModelAnalyzer {
 	protected ReflectionHelper $reflectionHelper;
 	protected FileContentsAnalyzer $fileContentsAnalyzer;
 
-	private $requiredImports = [];
-	private $lines;
-	private $currentFile;
-	private $modelFileType;
-	private $options;
+	private array $requiredImports = [];
+	private ?array $lines;
+	private ?string $currentFile;
+	private ?int $modelFileType;
+	private array $options;
 
 	public function __construct() {
 		if (!self::$newLine) {
