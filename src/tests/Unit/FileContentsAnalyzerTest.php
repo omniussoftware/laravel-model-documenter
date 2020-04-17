@@ -46,4 +46,14 @@ class FileContentsAnalyzerTest extends BaseTestCase {
 
 		$this->assertEquals('User', $name);
 	}
+
+	/** @test */
+	public function it_gets_proper_namespace_from_class() {
+		$fileHelper = new DefaultFileHelper();
+		$lines = $fileHelper->getLines(self::STUBS . 'User.txt');
+
+		$namespace = $this->analyzer->getNamespace($lines);
+
+		$this->assertEquals('App', $namespace);
+	}
 }
