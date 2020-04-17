@@ -8,7 +8,6 @@ use Enz0project\ModelDocumenter\Interfaces\DBHelper;
 use Enz0project\ModelDocumenter\Interfaces\FileContentsAnalyzer;
 use Enz0project\ModelDocumenter\Interfaces\FileHelper;
 use Enz0project\ModelDocumenter\Interfaces\ReflectionHelper;
-use Exception;
 use Illuminate\Support\Str;
 use ReflectionClass;
 
@@ -157,16 +156,6 @@ class ModelAnalyzer {
 		}
 
 		return true;
-	}
-
-	/**
-	 * @param ReflectionClass $reflectionClass
-	 * @param array $lines
-	 * @return array
-	 * @throws Exception
-	 */
-	protected function analyzeRelations(ReflectionClass $reflectionClass, array $lines): array {
-
 	}
 
 	/**
