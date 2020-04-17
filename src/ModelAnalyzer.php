@@ -30,7 +30,6 @@ class ModelAnalyzer {
 	private $lines;
 	private $currentFile;
 	private $modelFileType;
-	private $traitsInModel;
 	private $options;
 
 	public function __construct() {
@@ -71,15 +70,17 @@ class ModelAnalyzer {
 		$reflectionClass = new ReflectionClass("$namespace\\$classname");
 		$this->modelFileType = $this->reflectionHelper->getClassType($reflectionClass);
 
-		// Get all relations from this class as well as any traits it has
-		$relations = $this->analyzeRelations($reflectionClass, $this->lines);
+		// Get all relations from this class
+		$relationData = $this->reflectionHelper->getRelations($reflectionClass, $this->lines);
+		$relations = $relationData['relations'];
+		$this->requiredImports = $relationData['requiredImports'];
 
 		$properties = null;
 		if ($this->modelFileType === ModelData::TYPE_CLASS) {
 			$propertyData = $this->reflectionHelper->getProperties($reflectionClass);
 
 			$properties = $propertyData['properties'];
-			$this->requiredImports = $propertyData['requiredImports'];
+			$this->requiredImports = array_merge($this->requiredImports, $propertyData['requiredImports']);
 		}
 
 
@@ -165,66 +166,7 @@ class ModelAnalyzer {
 	 * @throws Exception
 	 */
 	protected function analyzeRelations(ReflectionClass $reflectionClass, array $lines): array {
-		$methods = $reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC);
-		$this->traitsInModel = $reflectionClass->getTraits();
 
-		$relations = [];
-
-		foreach ($methods as $method) {
-			$currMethod = $method;
-
-			// If the class declaring this method isn't the model we're inside now, we skip over it; for now.
-			$methodClassName = $method->getDeclaringClass()->getName();
-
-			if ($reflectionClass->getName() !== $methodClassName) {
-				continue;
-			}
-
-			$methodName = $method->getName();
-
-			// If this method comes from a trait, we skip it for now; it will be handled later
-			if ($this->methodIsInTrait($methodName)) {
-				continue;
-			}
-
-			$startLine = $method->getStartLine();
-			$endLine = $method->getEndLine();
-
-			for ($i = $startLine; $i < $endLine; $i++) {
-				$line = trim($lines[$i]);
-
-				// TODO: Maybe add support for returns where the returned thing is on the line below the 'return' keyword
-				if (Str::startsWith($line, 'return ')) {
-					$relatedClassName = ModelDocumenterHelper::getRelatedClassName($line);
-					if (null !== $relatedClassName) {
-						$relations[$methodName] = $relatedClassName;
-					}
-
-					// If the model uses a Collection we need to either import or fully qualify them with namespace
-					if (Str::startsWith($relatedClassName, 'Collection|') && !in_array('Collection', $this->requiredImports)) {
-						$this->requiredImports[] = 'Collection';
-					}
-				}
-			}
-		}
-
-		return $relations;
-	}
-
-	/**
-	 * Checks if any of the models traits have a specific method
-	 *
-	 * @param $method
-	 * @return bool
-	 */
-	private function methodIsInTrait($method): bool {
-		foreach ($this->traitsInModel as $trait) {
-			if ($trait->hasMethod($method)) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**
@@ -234,7 +176,6 @@ class ModelAnalyzer {
 		$this->currentFile = null;
 		$this->modelFileType = null;
 		$this->lines = null;
-		$this->traitsInModel = null;
 		$this->requiredImports = [];
 	}
 }
