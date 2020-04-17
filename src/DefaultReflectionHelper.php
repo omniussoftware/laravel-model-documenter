@@ -12,7 +12,7 @@ use ReflectionClass;
 
 class DefaultReflectionHelper implements ReflectionHelper {
 	/**
-	 * { @inheritDoc }
+	 * @inheritDoc
 	 */
 	public function getTableName(ReflectionClass $reflectionClass): string {
 		$instance = $reflectionClass->newInstance();
@@ -26,7 +26,7 @@ class DefaultReflectionHelper implements ReflectionHelper {
 	}
 
 	/**
-	 * { @inheritDoc }
+	 * @inheritDoc
 	 */
 	public function getDates(ReflectionClass $reflectionClass): array {
 		$instance = $reflectionClass->newInstance();
