@@ -26,17 +26,18 @@ class MySQLDBHelper implements DBHelper {
 	 * { @inheritDoc }
 	 */
 	public function dbTypeToPHP($column): string {
-		$mysqlType = $column->Type;
+		$mysqlType = trim($column->Type);
 		$nullable = $column->Null === 'YES';
 		$phpType = '';
 
 		if (Str::contains($mysqlType, 'int')) {
 			$phpType = 'int';
-		} elseif (Str::contains($mysqlType, 'varchar')
-			|| Str::contains($mysqlType, 'text')
-			|| Str::contains($mysqlType, 'char')
-			|| Str::contains($mysqlType, 'json')
-			|| Str::contains($mysqlType, 'enum')) {
+		} elseif (Str::startsWith($mysqlType, 'varchar')
+			|| Str::startsWith($mysqlType, 'text')
+			|| Str::startsWith($mysqlType, 'char')
+			|| Str::startsWith($mysqlType, 'json')
+			|| $mysqlType === 'time'
+			|| Str::startsWith($mysqlType, 'enum')) {
 			$phpType = 'string';
 		} elseif (Str::contains($mysqlType, 'timestamp') || Str::contains($mysqlType, 'datetime')) {
 			$phpType = $this->carbonString;
