@@ -33,7 +33,7 @@ class MySQLDBHelper implements DBHelper {
 		if (Str::contains($mysqlType, 'int')) {
 			$phpType = 'int';
 		} elseif (Str::startsWith($mysqlType, 'varchar')
-			|| Str::startsWith($mysqlType, 'text')
+			|| Str::contains($mysqlType, 'text')
 			|| Str::startsWith($mysqlType, 'char')
 			|| Str::startsWith($mysqlType, 'json')
 			|| $mysqlType === 'time'
