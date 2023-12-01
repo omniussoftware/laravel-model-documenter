@@ -4,6 +4,7 @@
 namespace Enz0project\ModelDocumenter;
 
 
+use Enz0project\ModelDocumenter\Exceptions\NotAClassException;
 use Enz0project\ModelDocumenter\Interfaces\DBHelper;
 use Enz0project\ModelDocumenter\Interfaces\FileHelper;
 use Enz0project\ModelDocumenter\Interfaces\ReflectionHelper;
@@ -57,7 +58,7 @@ class ModelAnalyzer {
 
 	public function analyze(string $filePath): ModelData {
 		$this->currentFile = $filePath;
-		$this->lines = $this->fileHelper->getLines($filePath);
+		$this->lines = file($filePath);
 
 		$classname = FileContentsAnalyzer::getName($this->lines);
 		$namespace = FileContentsAnalyzer::getNamespace($this->lines);

@@ -4,6 +4,7 @@
 namespace Enz0project\ModelDocumenter;
 
 
+use Enz0project\ModelDocumenter\Exceptions\NotAClassException;
 use Illuminate\Support\Str;
 
 class FileContentsAnalyzer {
@@ -13,6 +14,10 @@ class FileContentsAnalyzer {
 	 */
 	public static function getName(array $lines): string {
 		foreach ($lines as $line) {
+			if (Str::startsWith($line, 'interface')) {
+				throw new NotAClassException('This is an interface');
+			}
+
 			if (Str::startsWith($line, 'abstract class') || Str::startsWith($line, 'class')) {
 				$split = explode(' ', $line);
 

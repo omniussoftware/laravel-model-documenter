@@ -2,6 +2,7 @@
 
 namespace Enz0project\ModelDocumenter;
 
+use Enz0project\ModelDocumenter\Exceptions\NotAClassException;
 use Illuminate\Console\Command;
 
 class ModelDocumenterCommand extends Command {
@@ -70,7 +71,9 @@ class ModelDocumenterCommand extends Command {
 		foreach ($files as $file) {
 		    try {
                 $modelData = $this->modelAnalyzer->analyze($file);
-            } catch (\Throwable $e) {
+		    } catch (NotAClassException $e) {
+				// This isn't a class, skip it
+		    } catch (\Throwable $e) {
 		        $this->line('');
 		        $this->error($e->getMessage() . ' when analyzing file ' . $file);
 		        $this->warn('Skipping file ' . $file);
