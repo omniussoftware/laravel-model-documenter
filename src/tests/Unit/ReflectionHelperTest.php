@@ -42,33 +42,6 @@ class ReflectionHelperTest extends BaseTestCase {
 	}
 
 	/** @test */
-	public function it_gets_abstract_type_correct() {
-		$expectedType = ModelData::TYPE_ABSTRACT_CLASS;
-
-		$actualType = $this->reflectionHelper->getClassType(new \ReflectionClass(DummyBaseClass::class));
-
-		$this->assertEquals($expectedType, $actualType);
-	}
-
-	/** @test */
-	public function it_gets_interface_type_correct() {
-		$expectedType = ModelData::TYPE_INTERFACE;
-
-		$actualType = $this->reflectionHelper->getClassType(new \ReflectionClass(DummyInterface::class));
-
-		$this->assertEquals($expectedType, $actualType);
-	}
-
-	/** @test */
-	public function it_gets_class_type_correct() {
-		$expectedType = ModelData::TYPE_CLASS;
-
-		$actualType = $this->reflectionHelper->getClassType(new \ReflectionClass(DummyUserModel::class));
-
-		$this->assertEquals($expectedType, $actualType);
-	}
-
-	/** @test */
 	public function it_gets_properties_from_db() {
 		// Simulate that we have a Post model with three columns: id, title and created_at
 		$mysqlColumnDataForPost = [

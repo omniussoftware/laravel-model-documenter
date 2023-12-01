@@ -102,7 +102,6 @@ class ModelData {
 	 */
 	public function __construct(
 		string $name,
-		int $type,
 		array $fileContents,
 		?string $classDocBlock,
 		?array $properties,
@@ -111,7 +110,6 @@ class ModelData {
 		\ReflectionClass $reflectionClass
 	) {
 		$this->name = $name;
-		$this->type = $type;
 		$this->fileContents = $fileContents;
 		$this->classDocBlock = $classDocBlock ?? '';
 		$this->properties = $properties ?? [];

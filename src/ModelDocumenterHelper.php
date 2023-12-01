@@ -16,19 +16,13 @@ class ModelDocumenterHelper {
 	 * @return string
 	 */
 	public static function getClassDeclaration(ModelData $modelData): string {
-		$type = '';
-
-		if ($modelData->getType() === ModelData::TYPE_ABSTRACT_CLASS) {
+		if ($modelData->getReflectionClass()->isAbstract()) {
 			$type = 'abstract class ';
-		} elseif ($modelData->getType() === ModelData::TYPE_INTERFACE) {
-			$type = 'interface ';
-		} elseif ($modelData->getType() === ModelData::TYPE_CLASS) {
+		} else {
 			$type = 'class ';
 		}
 
-		$type .= $modelData->getName();
-
-		return $type;
+		return $type . $modelData->getName();
 	}
 	/**
 	 * Gets the class name of the related class from a 'return $this->hasOne(...)' line

@@ -4,7 +4,6 @@
 namespace Enz0project\ModelDocumenter;
 
 
-use Enz0project\ModelDocumenter\Exceptions\NotAClassException;
 use Enz0project\ModelDocumenter\Interfaces\DBHelper;
 use Enz0project\ModelDocumenter\Interfaces\ReflectionHelper;
 use Illuminate\Support\Str;
@@ -22,12 +21,10 @@ class ModelAnalyzer {
 	protected ReflectionHelper $reflectionHelper;
 
 	private array $requiredImports = [];
-	private ?array $lines;
-	private ?string $currentFile;
-	private ?int $modelFileType;
 	private array $options;
 
 	public function __construct() {
+		// TODO: Pick whatever the file uses?
 		if (!self::$newLine) {
 			// Set newline var
 			switch (config('modeldocumenter.lineendings')) {
@@ -54,22 +51,20 @@ class ModelAnalyzer {
 	}
 
 	public function analyze(string $filePath): ModelData {
-		$this->currentFile = $filePath;
-		$this->lines = file($filePath);
+		$lines = file($filePath);
 
-		$classname = FileContentsAnalyzer::getName($this->lines);
-		$namespace = FileContentsAnalyzer::getNamespace($this->lines);
+		$classname = FileContentsAnalyzer::getName($lines);
+		$namespace = FileContentsAnalyzer::getNamespace($lines);
 
 		$reflectionClass = new ReflectionClass("$namespace\\$classname");
-		$this->modelFileType = $this->reflectionHelper->getClassType($reflectionClass);
 
 		// Get all relations from this class
-		$relationData = $this->reflectionHelper->getRelations($reflectionClass, $this->lines);
+		$relationData = $this->reflectionHelper->getRelations($reflectionClass, $lines);
 		$relations = $relationData['relations'];
 		$this->requiredImports = $relationData['requiredImports'];
 
 		$properties = null;
-		if ($this->modelFileType === ModelData::TYPE_CLASS) {
+		if (!$reflectionClass->isAbstract()) {
 			$propertyData = $this->reflectionHelper->getProperties($reflectionClass);
 
 			$properties = $propertyData['properties'];
@@ -93,8 +88,7 @@ class ModelAnalyzer {
 
 		$modelData = new ModelData(
 			$classname,
-			$this->modelFileType,
-			$this->lines,
+			$lines,
 			$classDocBlock,
 			$properties ?? [],
 			$relations,
@@ -156,9 +150,7 @@ class ModelAnalyzer {
 	 * Resets the model analyzer so it's ready for the next file
 	 */
 	private function reset() {
-		$this->currentFile = null;
 		$this->modelFileType = null;
-		$this->lines = null;
 		$this->requiredImports = [];
 	}
 }
