@@ -3,8 +3,6 @@
 namespace Enz0project\ModelDocumenter;
 
 use Illuminate\Console\Command;
-use Illuminate\Database\QueryException;
-use Illuminate\Support\Str;
 
 class ModelDocumenterCommand extends Command {
 	/**
@@ -72,7 +70,7 @@ class ModelDocumenterCommand extends Command {
 		foreach ($files as $file) {
 		    try {
                 $modelData = $this->modelAnalyzer->analyze($file);
-            } catch (QueryException $e) {
+            } catch (\Throwable $e) {
 		        $this->line('');
 		        $this->error($e->getMessage() . ' when analyzing file ' . $file);
 		        $this->warn('Skipping file ' . $file);
