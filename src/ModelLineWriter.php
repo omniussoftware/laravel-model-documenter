@@ -388,7 +388,7 @@ class ModelLineWriter {
 	 * @return string
 	 */
 	protected function importCarbon(string $stringToBeWritten, string $useStatements): string {
-		if (Str::contains($useStatements, 'Carbon\Carbon;')) {
+		if (Str::contains($useStatements, '\Carbon;')) {
 			return $stringToBeWritten;
 		}
 
