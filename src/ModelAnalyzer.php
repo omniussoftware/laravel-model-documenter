@@ -5,7 +5,6 @@ namespace Enz0project\ModelDocumenter;
 
 
 use Enz0project\ModelDocumenter\Interfaces\DBHelper;
-use Enz0project\ModelDocumenter\Interfaces\FileContentsAnalyzer;
 use Enz0project\ModelDocumenter\Interfaces\FileHelper;
 use Enz0project\ModelDocumenter\Interfaces\ReflectionHelper;
 use Illuminate\Support\Str;
@@ -22,7 +21,6 @@ class ModelAnalyzer {
 	protected DBHelper $dbHelper;
 	protected FileHelper $fileHelper;
 	protected ReflectionHelper $reflectionHelper;
-	protected FileContentsAnalyzer $fileContentsAnalyzer;
 
 	private array $requiredImports = [];
 	private ?array $lines;
@@ -53,7 +51,6 @@ class ModelAnalyzer {
 		$this->dbHelper = app()->make(DBHelper::class);
 		$this->fileHelper = app()->make(FileHelper::class);
 		$this->reflectionHelper = app()->make(ReflectionHelper::class);
-		$this->fileContentsAnalyzer = app()->make(FileContentsAnalyzer::class);
 
 		$this->options = config('modeldocumenter.options');
 	}
@@ -62,8 +59,8 @@ class ModelAnalyzer {
 		$this->currentFile = $filePath;
 		$this->lines = $this->fileHelper->getLines($filePath);
 
-		$classname = $this->fileContentsAnalyzer->getName($this->lines);
-		$namespace = $this->fileContentsAnalyzer->getNamespace($this->lines);
+		$classname = FileContentsAnalyzer::getName($this->lines);
+		$namespace = FileContentsAnalyzer::getNamespace($this->lines);
 
 		$reflectionClass = new ReflectionClass("$namespace\\$classname");
 		$this->modelFileType = $this->reflectionHelper->getClassType($reflectionClass);
