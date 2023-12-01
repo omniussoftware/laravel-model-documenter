@@ -6,7 +6,6 @@ namespace Enz0project\ModelDocumenter;
 
 use Enz0project\ModelDocumenter\Exceptions\NotAClassException;
 use Enz0project\ModelDocumenter\Interfaces\DBHelper;
-use Enz0project\ModelDocumenter\Interfaces\FileHelper;
 use Enz0project\ModelDocumenter\Interfaces\ReflectionHelper;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -20,7 +19,6 @@ class ModelAnalyzer {
 	private const LINEENDING_LF = "\n";
 
 	protected DBHelper $dbHelper;
-	protected FileHelper $fileHelper;
 	protected ReflectionHelper $reflectionHelper;
 
 	private array $requiredImports = [];
@@ -50,7 +48,6 @@ class ModelAnalyzer {
 		}
 
 		$this->dbHelper = app()->make(DBHelper::class);
-		$this->fileHelper = app()->make(FileHelper::class);
 		$this->reflectionHelper = app()->make(ReflectionHelper::class);
 
 		$this->options = config('modeldocumenter.options');
