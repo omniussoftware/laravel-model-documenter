@@ -13,7 +13,7 @@ class FileContentsAnalyzer {
 	 */
 	public static function getName(array $lines): string {
 		foreach ($lines as $line) {
-			if (Str::startsWith($line, 'abstract class') || Str::startsWith('class')) {
+			if (Str::startsWith($line, 'abstract class') || Str::startsWith($line, 'class')) {
 				$split = explode(' ', $line);
 
 				return $split[array_search('class', $split, true) + 1];
