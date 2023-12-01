@@ -73,6 +73,7 @@ class ModelDocumenterCommand extends Command {
                 $modelData = $this->modelAnalyzer->analyze($file);
 		    } catch (NotAClassException $e) {
 				// This isn't a class, skip it
+			    continue;
 		    } catch (\Throwable $e) {
 		        $this->line('');
 		        $this->error($e->getMessage() . ' when analyzing file ' . $file);
