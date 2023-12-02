@@ -22,12 +22,8 @@ class ModelAnalyzer {
 
 		// Get all relations from this class
 		[$relations, $requiredImports] = $this->getRelations($reflectionClass, $lines);
-
-		$properties = null;
-		if (!$reflectionClass->isAbstract()) {
-			[$properties, $propertyImports] = $this->getProperties($reflectionClass);
-			$requiredImports = array_merge($requiredImports, $propertyImports);
-		}
+		[$properties, $propertyImports] = $this->getProperties($reflectionClass);
+		$requiredImports = array_merge($requiredImports, $propertyImports);
 
 		$classDocBlock = $reflectionClass->getDocComment() ?: null;
 		if ($classDocBlock) {
