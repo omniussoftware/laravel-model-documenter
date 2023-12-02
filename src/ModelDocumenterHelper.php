@@ -15,13 +15,14 @@ class ModelDocumenterHelper {
 	 * @return string
 	 */
 	public static function getClassDeclaration(ModelData $modelData): string {
-		if ($modelData->getReflectionClass()->isAbstract()) {
+		// TODO: should be able to make this a oneliner...
+		if ($modelData->reflectionClass->isAbstract()) {
 			$type = 'abstract class ';
 		} else {
 			$type = 'class ';
 		}
 
-		return $type . $modelData->getName();
+		return $type . $modelData->name;
 	}
 
 	/**

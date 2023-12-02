@@ -17,26 +17,18 @@ class ModelAnalyzer {
 
 		$classname = FileContentsAnalyzer::getName($lines);
 		$namespace = FileContentsAnalyzer::getNamespace($lines);
-
 		$reflectionClass = new ReflectionClass("$namespace\\$classname");
 
-		// Get all relations from this class
-		[$relations, $requiredImports] = $this->getRelations($reflectionClass, $lines);
+		[$relations, $relationImports] = $this->getRelations($reflectionClass, $lines);
 		[$properties, $propertyImports] = $this->getProperties($reflectionClass);
-		$requiredImports = array_merge($requiredImports, $propertyImports);
-
-		$classDocBlock = $reflectionClass->getDocComment() ?: null;
-		if ($classDocBlock) {
-			$classDocBlock .= self::$newLine;
-		}
 
 		return new ModelData(
 			$classname,
 			$lines,
-			$classDocBlock,
-			$properties ?? [],
+			with($reflectionClass->getDocComment(), fn ($x) => $x ? $x . self::$newLine : ''),
+			$properties,
 			$relations,
-			$requiredImports,
+			array_merge($relationImports, $propertyImports),
 			$reflectionClass
 		);
 	}
