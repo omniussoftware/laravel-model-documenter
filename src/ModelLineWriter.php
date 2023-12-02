@@ -39,7 +39,7 @@ class ModelLineWriter {
 		$classDeclarationString = ModelDocumenterHelper::getClassDeclaration($this->modelData);
 		$hasOriginalDocBlock = $this->hasExistingDocBlock();
 		$oldDocBlock = $this->modelData->classDocBlock;
-		$useStatements = '';
+		$useStatements = collect();
 
 		$this->buildClassDocBlock();
 
@@ -57,7 +57,7 @@ class ModelLineWriter {
 
 			// Store use statements
 			if (!$isInsideClass && Str::startsWith($line, 'use ')) {
-				$useStatements .= $line;
+				$useStatements[] = $line;
 			}
 
 			if (!$isInsideClass && Str::startsWith($line, $classDeclarationString)) {
@@ -69,16 +69,16 @@ class ModelLineWriter {
 						// If its the last line we don't add a newline because otherwise there is a blank line between the
 						// docblock and the class
 						if ($key === count($newBlock) - 1) {
-							$this->addLine($classBlockLine);
+							$this->lines[] = $classBlockLine;
 						} else {
-							$this->addLine($classBlockLine . ModelAnalyzer::$newLine);
+							$this->lines[] = $classBlockLine . ModelAnalyzer::$newLine;
 						}
 					}
 				}
-				$this->addLine($line);
+				$this->lines[] = $line;
 				$isInsideClass = true;
 			} else {
-				$this->addLine($line);
+				$this->lines[] = $line;
 			}
 
 			$previousLine = $line;
@@ -91,18 +91,27 @@ class ModelLineWriter {
 			$this->stringToBeWritten = str_replace($oldDocBlock, $this->modelData->classDocBlock, $this->stringToBeWritten);
 		}
 
-		if (in_array('Carbon', $this->modelData->requiredImports)) {
-			$this->stringToBeWritten = $this->importCarbon($this->stringToBeWritten, $useStatements);
+		// Handle use statements
+		if (!empty($this->modelData->requiredImports)) {
+			$originalUseString = $useStatements->join();
+			if (in_array('Carbon', $this->modelData->requiredImports)) {
+				if (!$useStatements->contains(fn ($line) => Str::contains($line, ['\Carbon;', 'as Carbon;']))) {
+					$useStatements[] = 'use \Carbon\Carbon;' . ModelAnalyzer::$newLine;
+				}
+			}
+
+			if (in_array('Collection', $this->modelData->requiredImports)) {
+				if (!$useStatements->contains(fn ($line) => Str::contains($line, ['\Collection;', 'as Collection;']))) {
+					$useStatements[] = 'use \Illuminate\Support\Collection;' . ModelAnalyzer::$newLine;
+				}
+			}
+
+			$this->stringTobeWritten = str_replace($originalUseString,
+				$useStatements->sorted()->join(),
+				$this->stringToBeWritten);
 		}
 
 		return $this->stringToBeWritten;
-	}
-
-	/**
-	 * @param string $line
-	 */
-	protected function addLine(string $line): void {
-		$this->lines[] = $line;
 	}
 
 	/**
@@ -208,21 +217,10 @@ class ModelLineWriter {
 		}
 
 		$originalDocBlock = explode(ModelAnalyzer::$newLine, $this->modelData->classDocBlock);
-
 		if ((count($originalDocBlock) && $originalDocBlock[0] !== '') || count($originalDocBlock) > 1) {
 			return true;
 		}
 
 		return false;
-	}
-
-	protected function importCarbon(string $stringToBeWritten, string $useStatements): string {
-		if (Str::contains($useStatements, '\Carbon;')) {
-			return $stringToBeWritten;
-		}
-
-		$replacedUseStatements = 'use Carbon\Carbon;' . ModelAnalyzer::$newLine . $useStatements;
-
-		return str_replace($useStatements, $replacedUseStatements, $stringToBeWritten);
 	}
 }
