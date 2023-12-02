@@ -52,10 +52,8 @@ class ModelAnalyzer {
 
 		$properties = null;
 		if (!$reflectionClass->isAbstract()) {
-			$propertyData = $this->getProperties($reflectionClass);
-
-			$properties = $propertyData['properties'];
-			$requiredImports = array_merge($requiredImports, $propertyData['requiredImports']);
+			[$properties, $propertyImports] = $this->getProperties($reflectionClass);
+			$requiredImports = array_merge($requiredImports, $propertyImports);
 		}
 
 		$classDocBlock = $reflectionClass->getDocComment();
@@ -184,8 +182,8 @@ class ModelAnalyzer {
 		}
 
 		return [
-			'relations' => $relations,
-			'requiredImports' => $requiredImports,
+			$relations,
+			$requiredImports,
 		];
 	}
 }
