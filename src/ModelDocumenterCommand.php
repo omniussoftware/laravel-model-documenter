@@ -31,7 +31,7 @@ class ModelDocumenterCommand extends Command {
 		$files = collect((new Filesystem())->allFiles(app_path('Models')))
 			->filter(fn ($splFile) => $splFile->getExtension() === 'php')
 			->when($this->argument('models'), function ($collection) {
-				$models = collect(explode(',', $this->argument('models'))->filter());
+				$models = collect(explode(',', $this->argument('models')))->filter();
 
 				return $collection->filter(function ($splFile) use ($models) {
 					return $models->contains($splFile->getFilenameWithoutExtension());
