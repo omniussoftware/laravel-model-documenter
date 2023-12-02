@@ -93,7 +93,7 @@ class ModelLineWriter {
 
 		// Handle use statements
 		if (!empty($this->modelData->requiredImports)) {
-			$originalUseString = $useStatements->join();
+			$originalUseString = $useStatements->join('');
 			if (in_array('Carbon', $this->modelData->requiredImports)) {
 				if (!$useStatements->contains(fn ($line) => Str::contains($line, ['\Carbon;', 'as Carbon;']))) {
 					$useStatements[] = 'use \Carbon\Carbon;' . ModelAnalyzer::$newLine;
@@ -107,7 +107,7 @@ class ModelLineWriter {
 			}
 
 			$this->stringTobeWritten = str_replace($originalUseString,
-				$useStatements->sorted()->join(),
+				$useStatements->sorted()->join(''),
 				$this->stringToBeWritten);
 		}
 
