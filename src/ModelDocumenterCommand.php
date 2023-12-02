@@ -37,7 +37,7 @@ class ModelDocumenterCommand extends Command {
 					return $models->contains($splFile->getFilenameWithoutExtension());
 				});
 			})
-			->map->toString();
+			->map->getFilename();
 
 		$bar = $this->output->createProgressBar(count($files));
 		$bar->start();
