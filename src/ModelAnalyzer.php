@@ -42,6 +42,9 @@ class ModelAnalyzer {
 	}
 
 	private function getProperties(ReflectionClass $reflectionClass): array {
+		if ($reflectionClass->isAbstract()) {
+			return [[], []];
+		}
 		$reflectedInstance = $reflectionClass->newInstance();
 
 		$dates = $reflectedInstance->getDates();
