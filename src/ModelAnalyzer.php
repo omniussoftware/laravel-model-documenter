@@ -61,14 +61,14 @@ class ModelAnalyzer {
 		// Get all relations from this class
 		$relationData = $this->reflectionHelper->getRelations($reflectionClass, $lines);
 		$relations = $relationData['relations'];
-		$this->requiredImports = $relationData['requiredImports'];
+		$requiredImports = $relationData['requiredImports'];
 
 		$properties = null;
 		if (!$reflectionClass->isAbstract()) {
 			$propertyData = $this->reflectionHelper->getProperties($reflectionClass);
 
 			$properties = $propertyData['properties'];
-			$this->requiredImports = array_merge($this->requiredImports, $propertyData['requiredImports']);
+			$requiredImports = array_merge($requiredImports, $propertyData['requiredImports']);
 		}
 
 
@@ -92,7 +92,7 @@ class ModelAnalyzer {
 			$classDocBlock,
 			$properties ?? [],
 			$relations,
-			$this->requiredImports,
+			$requiredImports,
 			$reflectionClass
 		);
 
@@ -150,7 +150,6 @@ class ModelAnalyzer {
 	 * Resets the model analyzer so it's ready for the next file
 	 */
 	private function reset() {
-		$this->modelFileType = null;
 		$this->requiredImports = [];
 	}
 }

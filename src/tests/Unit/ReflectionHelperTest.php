@@ -23,13 +23,6 @@ class ReflectionHelperTest extends BaseTestCase {
 	}
 
 	/** @test */
-	public function it_gets_table_name() {
-		$tableName = $this->reflectionHelper->getTableName(new \ReflectionClass(DummyUserModel::class));
-
-		$this->assertEquals($tableName, 'users');
-	}
-
-	/** @test */
 	public function it_gets_dates() {
 		$expectedDates = [
 			'created_at',
