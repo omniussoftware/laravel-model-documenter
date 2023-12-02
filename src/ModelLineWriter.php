@@ -96,17 +96,17 @@ class ModelLineWriter {
 			$originalUseString = $useStatements->join('');
 			if (in_array('Carbon', $this->modelData->requiredImports)) {
 				if (!$useStatements->contains(fn ($line) => Str::contains($line, ['\Carbon;', 'as Carbon;']))) {
-					$useStatements[] = 'use \Carbon\Carbon;' . ModelAnalyzer::$newLine;
+					$useStatements[] = 'use Carbon\Carbon;' . ModelAnalyzer::$newLine;
 				}
 			}
 
 			if (in_array('Collection', $this->modelData->requiredImports)) {
 				if (!$useStatements->contains(fn ($line) => Str::contains($line, ['\Collection;', 'as Collection;']))) {
-					$useStatements[] = 'use \Illuminate\Support\Collection;' . ModelAnalyzer::$newLine;
+					$useStatements[] = 'use Illuminate\Support\Collection;' . ModelAnalyzer::$newLine;
 				}
 			}
 
-			$this->stringTobeWritten = str_replace($originalUseString,
+			$this->stringToBeWritten = str_replace($originalUseString,
 				$useStatements->sort()->join(''),
 				$this->stringToBeWritten);
 		}
