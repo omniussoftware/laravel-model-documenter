@@ -22,25 +22,19 @@ class ModelDocumenterCommand extends Command {
 	 */
 	protected $description = "Adds docblocks with properties and relations to models";
 
-	private Collection $models;
-	private array $foundModels;
-
 	/**
 	 * Execute the console command.
 	 *
 	 * @return mixed
 	 */
 	public function handle() {
-		$modelAnalyzer = new ModelAnalyzer();
-		if ($this->hasArgument('models') && null !== $this->argument('models')) {
-			$this->models = collect(explode(',', $this->argument('models'))->filter());
-		}
-
 		$files = collect((new Filesystem())->allFiles(app_path('Models')))
 			->filter(fn ($splFile) => $splFile->getExtension() === 'php')
-			->when($this->models, function ($collection) {
-				return $collection->filter(function ($splFile) {
-					return $this->models->contains($splFile->getFilenameWithoutExtension());
+			->when($this->argument('models'), function ($collection) {
+				$models = collect(explode(',', $this->argument('models'))->filter());
+
+				return $collection->filter(function ($splFile) use ($models) {
+					return $models->contains($splFile->getFilenameWithoutExtension());
 				});
 			})
 			->map->toString();
@@ -48,6 +42,7 @@ class ModelDocumenterCommand extends Command {
 		$bar = $this->output->createProgressBar(count($files));
 		$bar->start();
 
+		$modelAnalyzer = new ModelAnalyzer();
 		foreach ($files as $file) {
 		    try {
                 $modelData = $modelAnalyzer->analyze($file);
