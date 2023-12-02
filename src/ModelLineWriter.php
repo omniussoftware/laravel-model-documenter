@@ -107,7 +107,7 @@ class ModelLineWriter {
 			}
 
 			$this->stringTobeWritten = str_replace($originalUseString,
-				$useStatements->sorted()->join(''),
+				$useStatements->sort()->join(''),
 				$this->stringToBeWritten);
 		}
 
