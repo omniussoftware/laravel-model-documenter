@@ -13,7 +13,7 @@ class ModelDocumenterCommand extends Command {
 	 *
 	 * @var string
 	 */
-	protected $signature = 'model:comment {models?}';
+	protected $signature = 'model:document {models?}';
 
 	/**
 	 * The console command description.
@@ -65,12 +65,12 @@ class ModelDocumenterCommand extends Command {
 
 			$newFileContents = (new ModelLineWriter($modelData))->replaceFileContents();
 
-			// TODO: Don't write if contents are identical?
-			$fileHandle = fopen($file, 'w');
-
-			fwrite($fileHandle, $newFileContents);
-
-			fclose($fileHandle);
+			// Don't write if contents are identical
+			if ($newFileContents !== implode($modelData->fileContents)) {
+				$fileHandle = fopen($file, 'w');
+				fwrite($fileHandle, $newFileContents);
+				fclose($fileHandle);
+			}
 
 			$bar->advance();
 		}
