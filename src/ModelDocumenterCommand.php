@@ -32,6 +32,12 @@ class ModelDocumenterCommand extends Command {
 			->filter(fn ($splFile) => $splFile->getExtension() === 'php')
 			->when($this->argument('models'), function ($collection) {
 				$models = collect(explode(',', $this->argument('models')))->filter();
+				foreach ($models as $model) {
+					if (!$collection->contains(fn ($splFile) => $splFile->getFilenameWithoutExtension() === $model)) {
+						$this->error("Could not find given model '$model'; aborting");
+						die();
+					}
+				}
 
 				return $collection->filter(function ($splFile) use ($models) {
 					return $models->contains($splFile->getFilenameWithoutExtension());
@@ -59,6 +65,7 @@ class ModelDocumenterCommand extends Command {
 
 			$newFileContents = (new ModelLineWriter($modelData))->replaceFileContents();
 
+			// TODO: Don't write if contents are identical?
 			$fileHandle = fopen($file, 'w');
 
 			fwrite($fileHandle, $newFileContents);
