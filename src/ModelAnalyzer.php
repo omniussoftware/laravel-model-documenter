@@ -138,8 +138,8 @@ class ModelAnalyzer {
 		}
 
 		return [
-			'properties' => $propsToReturn,
-			'requiredImports' => $requiredImports,
+			$propsToReturn,
+			$requiredImports,
 		];
 	}
 
@@ -159,8 +159,7 @@ class ModelAnalyzer {
 			$methodName = $method->getName();
 
 			// If this method comes from a trait, we skip it for now; it will be handled later
-			// if (collect($traitsInModel)->contains->hasMethod($method)) {
-			if ($this->methodIsInTrait($method, $traitsInModel)) {
+			if (collect($traitsInModel)->contains->hasMethod($methodName)) {
 				continue;
 			}
 
@@ -188,15 +187,5 @@ class ModelAnalyzer {
 			'relations' => $relations,
 			'requiredImports' => $requiredImports,
 		];
-	}
-
-	protected function methodIsInTrait($method, array $traitsInModel): bool {
-		foreach ($traitsInModel as $trait) {
-			if ($trait->hasMethod($method)) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 }
