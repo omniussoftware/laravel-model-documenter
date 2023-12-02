@@ -20,8 +20,6 @@ class ModelAnalyzer {
 	protected DBHelper $dbHelper;
 	protected ReflectionHelper $reflectionHelper;
 
-	private array $requiredImports = [];
-
 	public function __construct() {
 		// TODO: Pick whatever the file uses?
 		if (!self::$newLine) {
@@ -86,8 +84,6 @@ class ModelAnalyzer {
 			$reflectionClass
 		);
 
-		$this->reset();
-
 		return $modelData;
 	}
 
@@ -111,12 +107,5 @@ class ModelAnalyzer {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Resets the model analyzer so it's ready for the next file
-	 */
-	private function reset() {
-		$this->requiredImports = [];
 	}
 }
