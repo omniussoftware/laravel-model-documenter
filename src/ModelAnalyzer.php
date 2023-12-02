@@ -21,7 +21,6 @@ class ModelAnalyzer {
 	protected ReflectionHelper $reflectionHelper;
 
 	private array $requiredImports = [];
-	private array $options;
 
 	public function __construct() {
 		// TODO: Pick whatever the file uses?
@@ -46,8 +45,6 @@ class ModelAnalyzer {
 
 		$this->dbHelper = app()->make(DBHelper::class);
 		$this->reflectionHelper = app()->make(ReflectionHelper::class);
-
-		$this->options = config('modeldocumenter.options');
 	}
 
 	public function analyze(string $filePath): ModelData {
@@ -71,13 +68,6 @@ class ModelAnalyzer {
 			$requiredImports = array_merge($requiredImports, $propertyData['requiredImports']);
 		}
 
-
-		if ($properties) {
-			$properties = $this->sort($properties);
-		}
-		$relations = $this->sort($relations);
-
-
 		$classDocBlock = $reflectionClass->getDocComment();
 
 		if (!$this->classDocBlockIsValid($classDocBlock)) {
@@ -99,29 +89,6 @@ class ModelAnalyzer {
 		$this->reset();
 
 		return $modelData;
-	}
-
-	/**
-	 * Sorts an array if the ModelDocumenter options say it should; otherwise just returns the original array
-	 *
-	 * @param array $array
-	 * @return array
-	 */
-	protected function sort(array $array): array {
-		if (array_key_exists(ModelDocumenterOptions::SORT_DOCBLOCK, $this->options)) {
-			static $sorts = [];
-
-			if ($sorts === []) {
-				$sorts = [
-					ModelDocumenterOptions::SORT_NAME_ASC => function (&$array) { ksort($array); },
-					ModelDocumenterOptions::SORT_NAME_DESC => function (&$array) { krsort($array); },
-				];
-			}
-
-			$sorts[$this->options[ModelDocumenterOptions::SORT_DOCBLOCK]]($array);
-		}
-
-		return $array;
 	}
 
 	/**

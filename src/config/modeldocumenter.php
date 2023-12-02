@@ -11,7 +11,4 @@ return [
 	// Add any custom modules here
 	'modules' => [
 	],
-	'options' => [
-		// \Enz0project\ModelDocumenter\ModelDocumenterOptions::SORT_DOCBLOCK => \Enz0project\ModelDocumenter\ModelDocumenterOptions::SORT_NAME_ASC,
-	],
 ];
