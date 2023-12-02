@@ -4,43 +4,16 @@
 namespace Enz0project\ModelDocumenter;
 
 
-use Enz0project\ModelDocumenter\Interfaces\ReflectionHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use ReflectionClass;
 
 class ModelAnalyzer {
-	public static $newLine;
-
-	private const LINEENDING_CRLF = "\r\n";
-	private const LINEENDING_LFCR = "\n\r";
-	private const LINEENDING_CR = "\r";
-	private const LINEENDING_LF = "\n";
-
-	public function __construct() {
-		// TODO: Pick whatever the file uses?
-		if (!self::$newLine) {
-			// Set newline var
-			switch (config('modeldocumenter.lineendings')) {
-				case 'crlf':
-					self::$newLine = self::LINEENDING_CRLF;
-					break;
-				case 'lfcr':
-					self::$newLine = self::LINEENDING_LFCR;
-					break;
-				case 'cr':
-					self::$newline = self::LINEENDING_CR;
-					break;
-				case 'lf':
-				default:
-					self::$newLine = self::LINEENDING_LF;
-					break;
-			}
-		}
-	}
+	public static string $newLine;
 
 	public function analyze(string $filePath): ModelData {
 		$lines = file($filePath);
+		self::$newLine = ($lines[0][-2] ?? null) === "\r" ? "\r\n" : "\n";
 
 		$classname = FileContentsAnalyzer::getName($lines);
 		$namespace = FileContentsAnalyzer::getNamespace($lines);
@@ -79,7 +52,6 @@ class ModelAnalyzer {
 	 * @return bool
 	 */
 	protected function classDocBlockIsValid(string $classDocBlock): bool {
-		$phpstormHeaders = '/**' . self::$newLine . ' * Created by phpStorm.' . self::$newLine;
 		if ($classDocBlock === self::$newLine) {
 			return false;
 		}
@@ -88,6 +60,7 @@ class ModelAnalyzer {
 			return false;
 		}
 
+		$phpstormHeaders = '/**' . self::$newLine . ' * Created by phpStorm.' . self::$newLine;
 		if (Str::startsWith($classDocBlock, $phpstormHeaders)) {
 			return false;
 		}
