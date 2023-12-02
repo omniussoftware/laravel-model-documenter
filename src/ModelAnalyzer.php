@@ -29,10 +29,8 @@ class ModelAnalyzer {
 			$requiredImports = array_merge($requiredImports, $propertyImports);
 		}
 
-		$classDocBlock = $reflectionClass->getDocComment();
-		if (!$this->classDocBlockIsValid($classDocBlock)) {
-			$classDocBlock = null;
-		} else {
+		$classDocBlock = $reflectionClass->getDocComment() ?: null;
+		if ($classDocBlock) {
 			$classDocBlock .= self::$newLine;
 		}
 
@@ -45,27 +43,6 @@ class ModelAnalyzer {
 			$requiredImports,
 			$reflectionClass
 		);
-	}
-
-	/**
-	 * @param string $classDocBlock
-	 * @return bool
-	 */
-	protected function classDocBlockIsValid(string $classDocBlock): bool {
-		if ($classDocBlock === self::$newLine) {
-			return false;
-		}
-
-		if ($classDocBlock === '') {
-			return false;
-		}
-
-		$phpstormHeaders = '/**' . self::$newLine . ' * Created by phpStorm.' . self::$newLine;
-		if (Str::startsWith($classDocBlock, $phpstormHeaders)) {
-			return false;
-		}
-
-		return true;
 	}
 
 	private function getProperties(ReflectionClass $reflectionClass): array {
