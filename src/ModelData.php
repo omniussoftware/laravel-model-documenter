@@ -10,6 +10,20 @@ use Illuminate\Support\Str;
 use ReflectionClass;
 
 class ModelData {
+	public static $toManyRelations = [
+		'$this->hasMany(',
+		'$this->belongsToMany(',
+	];
+
+	public static $allRelations = [
+		'$this->belongsTo(',
+		'$this->hasOne(',
+		'$this->hasOneThrough(',
+		'$this->hasMany(',
+		'$this->belongsToMany(',
+	];
+
+
 	public string $newline;
 	public string $name;
 	public array $fileContents;
@@ -27,104 +41,78 @@ class ModelData {
 		$this->name = $this->reflectionClass->getShortName();
 		$this->classDocBlock = with($this->reflectionClass->getDocComment(), fn ($x) => $x ? $x . $this->newline : '');
 
-		[$this->relations, $relationImports] = $this->getRelations($this->reflectionClass, $this->fileContents);
-		[$this->properties, $propertyImports] = $this->getProperties($this->reflectionClass);
-		$this->requiredImports = array_merge($relationImports, $propertyImports);
+		$this->properties = $this->getProperties($this->reflectionClass);
+		$this->relations = $this->getRelations($this->reflectionClass, $this->fileContents);
+		$this->requiredImports = collect([
+			collect($this->properties)->contains(fn ($x) => Str::startsWith($x, 'Carbon')) ? 'Carbon' : '',
+			collect($this->relations)->contains(fn ($x) => Str::startsWith($x, 'Collection')) ? 'Collection' : '',
+		])->filter()->values()->all();
 	}
 
 	private function getProperties(ReflectionClass $reflectionClass): array {
 		if ($reflectionClass->isAbstract()) {
-			return [[], []];
+			return [];
 		}
 		$reflectedInstance = $reflectionClass->newInstance();
-
 		$dates = $reflectedInstance->getDates();
-		$propsToReturn = [];
-		$requiredImports = [];
 
-		$dbColumns = DB::select('DESCRIBE `' . $reflectedInstance->getTable() . '`');
-		foreach ($dbColumns as $column) {
-			// If it's in $dates it's always a Carbon
-			if (in_array($column->Field, $dates)) {
-				$phpType = 'Carbon';
-			} else {
-				$colType = $column->Type;
-				$phpType = '';
-				if (Str::contains($colType, 'int')) {
-					$phpType = 'int';
-				} elseif ($colType === 'time' || Str::contains($colType, ['varchar', 'text', 'char', 'json', 'enum'])) {
-					$phpType = 'string';
-				} elseif (Str::contains($colType, ['timestamp', 'date'])) {
+		return collect(DB::select('DESCRIBE `' . $reflectedInstance->getTable() . '`'))
+			->mapWithKeys(function ($column) use ($dates) {
+				// If it's in $dates it's always a Carbon
+				if (in_array($column->Field, $dates, true)) {
 					$phpType = 'Carbon';
-				} elseif (Str::contains($colType, 'decimal')) {
-					$phpType = 'float';
+				} else {
+					$colType = $column->Type;
+					$phpType = '';
+					if (Str::contains($colType, 'int')) {
+						$phpType = 'int';
+					} elseif ($colType === 'time' || Str::contains($colType, ['varchar', 'text', 'char', 'json', 'enum'])) {
+						$phpType = 'string';
+					} elseif (Str::contains($colType, ['timestamp', 'date'])) {
+						$phpType = 'Carbon';
+					} elseif (Str::contains($colType, 'decimal')) {
+						$phpType = 'float';
+					}
+
+					if (strlen($phpType) === 0) {
+						throw new \InvalidArgumentException("Could not parse type from `$colType`");
+					}
 				}
 
-				if (strlen($phpType) === 0) {
-					throw new \InvalidArgumentException("Could not parse type from `$colType`");
-				}
-			}
-			if ($column->Null === 'YES') {
-				$phpType .= '|null';
-			}
-
-			// If the model uses a Carbon we need to either import or fully qualify them with namespace
-			if (Str::startsWith($phpType, 'Carbon') && !in_array('Carbon', $requiredImports)) {
-				$requiredImports[] = 'Carbon';
-			}
-			$propsToReturn[$column->Field] = $phpType;
-		}
-
-		return [
-			$propsToReturn,
-			$requiredImports,
-		];
+				return [$column->Field => $phpType . ($column->Null === 'YES' ? '|null' : '')];
+			});
 	}
 
 	private function getRelations(ReflectionClass $reflectionClass, array $lines): array {
-		$methods = $reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC);
-		$traitsInModel = $reflectionClass->getTraits();
+		$traitsInModel = collect($reflectionClass->getTraits());
 
-		$requiredImports = [];
-		$relations = [];
+		return collect($reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC))
+			->filter(function ($method) use ($reflectionClass, $traitsInModel) {
+				// If the class declaring this method isn't the model we're inside now, we skip over it; for now.
+				if ($reflectionClass->getName() !== $method->getDeclaringClass()->getName()) {
+					return false;
+				}
 
-		foreach ($methods as $method) {
-			// If the class declaring this method isn't the model we're inside now, we skip over it; for now.
-			$methodClassName = $method->getDeclaringClass()->getName();
-			if ($reflectionClass->getName() !== $methodClassName) {
-				continue;
-			}
-			$methodName = $method->getName();
+				// If this method comes from a trait, we skip it for now; it will be handled later
+				if ($traitsInModel->contains->hasMethod($method->getName())) {
+					return false;
+				}
 
-			// If this method comes from a trait, we skip it for now; it will be handled later
-			if (collect($traitsInModel)->contains->hasMethod($methodName)) {
-				continue;
-			}
+				return true;
+			})->mapWithKeys(function ($method) use ($lines) {
+				$startLine = $method->getStartLine();
+				$endLine = $method->getEndLine();
+				for ($i = $startLine; $i < $endLine; $i++) {
+					$line = trim($lines[$i]);
 
-			$startLine = $method->getStartLine();
-			$endLine = $method->getEndLine();
-			for ($i = $startLine; $i < $endLine; $i++) {
-				$line = trim($lines[$i]);
-
-				// TODO: Maybe add support for returns where the returned thing is on the line below the 'return' keyword
-				if (Str::startsWith($line, 'return ')) {
-					$relatedClassName = ModelDocumenterHelper::getReturnedClassName($line);
-					if (null !== $relatedClassName) {
-						$relations[$methodName] = $relatedClassName;
-					}
-
-					// If the model uses a Collection we need to either import or fully qualify them with namespace
-					if (Str::startsWith($relatedClassName, 'Collection|') && !in_array('Collection', $requiredImports)) {
-						$requiredImports[] = 'Collection';
+					// TODO: Maybe add support for returns where the returned thing is on the line below the 'return' keyword
+					if (Str::startsWith($line, 'return ')) {
+						return [$method->getName() => $this->getReturnedClassName($line)];
 					}
 				}
-			}
-		}
 
-		return [
-			$relations,
-			$requiredImports,
-		];
+				return [];
+			})->filter()->values()->all();
 	}
 
 	private function getFQN(array $lines): string {
@@ -146,5 +134,31 @@ class ModelData {
 		} catch (\Throwable $e) {
 			throw new \InvalidArgumentException("Could not find class name and namespace!");
 		}
+	}
+
+	/**
+	 * Gets the class name of the related class from a 'return $this->hasOne(...)' line
+	 */
+	private function getReturnedClassName(string $line): ?string {
+		try {
+			// If this method does not return a relation, we're not interested in it
+			if (!Str::contains($line, self::$allRelations)) {
+				return null;
+			}
+
+			// Finds first (, ignores first '", then grabs word characters (and backslashes). Then removes namespace
+			preg_match("/^.*?\(['\"]?([\w\\\]+)/", $line, $matches);
+			$className = explode('\\', $matches[1]);
+			$className = end($className);
+
+			// If its a relation that will return a Collection we need to specify that, i.e. 'Collection|Student[]'
+			if (Str::contains($line, self::$toManyRelations)) {
+				$className = 'Collection|' . $className . '[]';
+			}
+		} catch (\Exception $e) {
+			return null;
+		}
+
+		return $className ?: null;
 	}
 }

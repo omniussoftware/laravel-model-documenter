@@ -7,30 +7,15 @@ namespace Enz0project\ModelDocumenter;
 use Illuminate\Support\Str;
 
 class ModelLineWriter {
-	public static $toManyRelations = [
-		'$this->hasMany(',
-		'$this->belongsToMany(',
-	];
-
-	public static $allRelations = [
-		'$this->belongsTo(',
-		'$this->hasOne(',
-		'$this->hasOneThrough(',
-		'$this->hasMany(',
-		'$this->belongsToMany(',
-	];
-
 	private ModelData $modelData;
 	private array $lines = [];
-	private string $stringToBeWritten;
-
 
 	public function __construct(ModelData $modelData) {
 		$this->modelData = $modelData;
 	}
 
 	public function replaceFileContents(): string {
-		$classDeclarationString = ModelDocumenterHelper::getClassDeclaration($this->modelData);
+		$classDeclarationString = $this->getClassDeclaration($this->modelData);
 		$hasOriginalDocBlock = $this->hasExistingDocBlock();
 		$oldDocBlock = $this->modelData->classDocBlock;
 		$useStatements = collect();
@@ -78,11 +63,11 @@ class ModelLineWriter {
 			$previousLine = $line;
 		}
 
-		$this->stringToBeWritten = implode('', $this->lines);
+		$stringToBeWritten = implode('', $this->lines);
 
 		// If the model already has a docblock, replace it with the new one
 		if ($hasOriginalDocBlock) {
-			$this->stringToBeWritten = str_replace($oldDocBlock, $this->modelData->classDocBlock, $this->stringToBeWritten);
+			$stringToBeWritten = str_replace($oldDocBlock, $this->modelData->classDocBlock, $stringToBeWritten);
 		}
 
 		// Handle use statements
@@ -100,15 +85,15 @@ class ModelLineWriter {
 				}
 			}
 
-			$this->stringToBeWritten = str_replace($originalUseString,
+			$stringToBeWritten = str_replace($originalUseString,
 				$useStatements->sort(function ($a, $b) {
 					// In order to mimic php-cs-fixer order, replace backslashes by spaces before sorting
 					return str_replace('\\', ' ', $a) <=> str_replace('\\', ' ', $b);
 				})->join(''),
-				$this->stringToBeWritten);
+				$stringToBeWritten);
 		}
 
-		return $this->stringToBeWritten;
+		return $stringToBeWritten;
 	}
 
 	/**
@@ -134,8 +119,7 @@ class ModelLineWriter {
 
 		$originalDocBlock = explode($this->modelData->newline, $modelData->classDocBlock);
 
-		$class = ucfirst(ModelDocumenterHelper::getClassDeclaration($modelData));
-
+		$class = ucfirst($this->getClassDeclaration($modelData));
 		$newDocBlock = [
 			'/**',
 			" * $class",
@@ -219,5 +203,10 @@ class ModelLineWriter {
 		}
 
 		return false;
+	}
+
+	private function getClassDeclaration(ModelData $modelData): string {
+		return ($modelData->reflectionClass->isAbstract() ? 'abstract ' : '') . "class {$modelData->name}";
+
 	}
 }
