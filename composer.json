@@ -25,7 +25,7 @@
 	"extra": {
 		"laravel": {
 			"providers": [
-				"Omniway\\ModelDocumenter\\ModelDocumenterProvider"
+				"Omniway\\ModelDocumenter\\Providers\\ModelDocumenterProvider"
 			],
 			"aliases": {
 
