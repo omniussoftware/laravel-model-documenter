@@ -80,7 +80,7 @@ class ModelData {
 				}
 
 				return [$column->Field => $phpType . ($column->Null === 'YES' ? '|null' : '')];
-			});
+			})->all();
 	}
 
 	private function getRelations(ReflectionClass $reflectionClass, array $lines): array {
@@ -112,7 +112,7 @@ class ModelData {
 				}
 
 				return [];
-			})->filter()->values()->all();
+			})->filter()->all();
 	}
 
 	private function getFQN(array $lines): string {
