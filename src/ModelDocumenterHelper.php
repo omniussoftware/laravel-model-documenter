@@ -44,7 +44,7 @@ class ModelDocumenterHelper {
 			$className = end($className);
 
 			// If its a relation that will return a Collection we need to specify that, i.e. 'Collection|Student[]'
-			if (Str::contains($line, ModelLineWriter::$oneOrManyToManyRelations)) {
+			if (Str::contains($line, ModelLineWriter::$toManyRelations)) {
 				$className = 'Collection|' . $className . '[]';
 			}
 		} catch (\Exception $e) {

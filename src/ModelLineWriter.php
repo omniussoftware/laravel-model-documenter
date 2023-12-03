@@ -7,13 +7,7 @@ namespace Enz0project\ModelDocumenter;
 use Illuminate\Support\Str;
 
 class ModelLineWriter {
-	public static $oneToOneRelations = [
-		'$this->belongsTo(',
-		'$this->hasOne(',
-		'$this->hasOneThrough(',
-	];
-
-	public static $oneOrManyToManyRelations = [
+	public static $toManyRelations = [
 		'$this->hasMany(',
 		'$this->belongsToMany(',
 	];
@@ -63,7 +57,7 @@ class ModelLineWriter {
 			if (!$isInsideClass && Str::startsWith($line, $classDeclarationString)) {
 				// Add the class docblock before the class declaration!
 				if (!$hasOriginalDocBlock) {
-					$newBlock = explode(ModelAnalyzer::$newLine, $this->modelData->classDocBlock);
+					$newBlock = explode($this->modelData->newline, $this->modelData->classDocBlock);
 
 					foreach ($newBlock as $key => $classBlockLine) {
 						// If its the last line we don't add a newline because otherwise there is a blank line between the
@@ -71,7 +65,7 @@ class ModelLineWriter {
 						if ($key === count($newBlock) - 1) {
 							$this->lines[] = $classBlockLine;
 						} else {
-							$this->lines[] = $classBlockLine . ModelAnalyzer::$newLine;
+							$this->lines[] = $classBlockLine . $this->modelData->newline;
 						}
 					}
 				}
@@ -96,18 +90,21 @@ class ModelLineWriter {
 			$originalUseString = $useStatements->join('');
 			if (in_array('Carbon', $this->modelData->requiredImports)) {
 				if (!$useStatements->contains(fn ($line) => Str::contains($line, ['\Carbon;', 'as Carbon;']))) {
-					$useStatements[] = 'use Carbon\Carbon;' . ModelAnalyzer::$newLine;
+					$useStatements[] = 'use Carbon\Carbon;' . $this->modelData->newline;
 				}
 			}
 
 			if (in_array('Collection', $this->modelData->requiredImports)) {
 				if (!$useStatements->contains(fn ($line) => Str::contains($line, ['\Collection;', 'as Collection;']))) {
-					$useStatements[] = 'use Illuminate\Support\Collection;' . ModelAnalyzer::$newLine;
+					$useStatements[] = 'use Illuminate\Support\Collection;' . $this->modelData->newline;
 				}
 			}
 
 			$this->stringToBeWritten = str_replace($originalUseString,
-				$useStatements->sort()->join(''),
+				$useStatements->sort(function ($a, $b) {
+					// In order to mimic php-cs-fixer order, replace backslashes by spaces before sorting
+					return str_replace('\\', ' ', $a) <=> str_replace('\\', ' ', $b);
+				})->join(''),
 				$this->stringToBeWritten);
 		}
 
@@ -135,7 +132,7 @@ class ModelLineWriter {
 		$properties = $modelData->properties;
 		$relations = $modelData->relations;
 
-		$originalDocBlock = explode(ModelAnalyzer::$newLine, $modelData->classDocBlock);
+		$originalDocBlock = explode($this->modelData->newline, $modelData->classDocBlock);
 
 		$class = ucfirst(ModelDocumenterHelper::getClassDeclaration($modelData));
 
@@ -205,7 +202,7 @@ class ModelLineWriter {
 
 		// Finally add newlines after each line
 		$newDocBlock = array_map(function ($line) {
-			return $line . ModelAnalyzer::$newLine;
+			return $line . $this->modelData->newline;
 		}, $newDocBlock);
 
 		$this->modelData->classDocBlock = implode('', $newDocBlock);
@@ -216,7 +213,7 @@ class ModelLineWriter {
 			return false;
 		}
 
-		$originalDocBlock = explode(ModelAnalyzer::$newLine, $this->modelData->classDocBlock);
+		$originalDocBlock = explode($this->modelData->newline, $this->modelData->classDocBlock);
 		if ((count($originalDocBlock) && $originalDocBlock[0] !== '') || count($originalDocBlock) > 1) {
 			return true;
 		}

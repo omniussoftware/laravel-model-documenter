@@ -48,10 +48,9 @@ class ModelDocumenterCommand extends Command {
 		$bar = $this->output->createProgressBar(count($files));
 		$bar->start();
 
-		$modelAnalyzer = new ModelAnalyzer();
 		foreach ($files as $file) {
 		    try {
-                $modelData = $modelAnalyzer->analyze($file);
+                $modelData = new ModelData($file);
 		    } catch (NotAClassException $e) {
 				// This isn't a class, skip it
 			    $bar->advance();
