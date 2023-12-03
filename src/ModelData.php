@@ -24,7 +24,7 @@ class ModelData {
 		$this->newline = ($this->fileContents[0][-2] ?? null) === "\r" ? "\r\n" : "\n";
 
 		$this->reflectionClass = new ReflectionClass($this->getFQN($this->fileContents));
-		$this->name = $this->reflectionClass->getName();
+		$this->name = $this->reflectionClass->getShortName();
 		$this->classDocBlock = with($this->reflectionClass->getDocComment(), fn ($x) => $x ? $x . $this->newline : '');
 
 		[$this->relations, $relationImports] = $this->getRelations($this->reflectionClass, $this->fileContents);
