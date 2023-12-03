@@ -1,6 +1,6 @@
 <?php
 
-namespace Omniway\ModelDocumenter;
+namespace Omniway\ModelDocumenter\Providers;
 
 use Omniway\ModelDocumenter\Commands\ModelDocumentCommand;
 use Illuminate\Support\ServiceProvider;
