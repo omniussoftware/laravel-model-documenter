@@ -1,6 +1,6 @@
 <?php
 
-namespace Enz0project\ModelDocumenter\Exceptions;
+namespace Omniway\ModelDocumenter\Exceptions;
 
 class NotAClassException extends \Exception {
 

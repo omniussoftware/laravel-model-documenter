@@ -1,10 +1,10 @@
 <?php
 
 
-namespace Enz0project\ModelDocumenter;
+namespace Omniway\ModelDocumenter;
 
 
-use Enz0project\ModelDocumenter\Exceptions\NotAClassException;
+use Omniway\ModelDocumenter\Exceptions\NotAClassException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use ReflectionClass;
