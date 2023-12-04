@@ -17,6 +17,7 @@ class ModelData {
 
 	public static $allRelations = [
 		'$this->belongsTo(',
+		'$this->belongsToOneThrough(',
 		'$this->hasOne(',
 		'$this->hasOneThrough(',
 		'$this->hasMany(',
