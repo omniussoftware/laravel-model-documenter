@@ -109,9 +109,9 @@ class ModelFileWriter {
 
 		$linesToIgnore = [
 			'/**',
-			'abstract class ' . strtolower($modelData->name),
-			'interface ' . strtolower($modelData->name),
-			'class ' . strtolower($modelData->name),
+			' * abstract class ',
+			' * interface ',
+			' * class ',
 			' * properties:',
 			' * relations:',
 			' * @property',
@@ -123,10 +123,9 @@ class ModelFileWriter {
 
 		$originalDocBlock = explode($this->modelData->newline, $modelData->classDocBlock);
 
-		$class = ucfirst($this->getClassDeclaration($modelData));
 		$newDocBlock = [
 			'/**',
-			" * $class",
+			" * " . ucfirst($this->getClassDeclaration($modelData)),
 		];
 
 		$previousLine = null;
