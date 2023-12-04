@@ -109,9 +109,6 @@ class ModelFileWriter {
 
 		$linesToIgnore = [
 			'/**',
-			' * abstract class ',
-			' * interface ',
-			' * class ',
 			' * properties:',
 			' * relations:',
 			' * @property',
@@ -138,7 +135,11 @@ class ModelFileWriter {
 			}
 
 			// If this isn't the end of the docblock or a @property line, we add it
-			if ($docBlockLine !== ' */' && !Str::contains(strtolower($docBlockLine), $linesToIgnore)) {
+			if ($docBlockLine !== ' */'
+				&& !Str::contains(strtolower($docBlockLine), $linesToIgnore)
+				// nukes old class declarations
+				&& !preg_match('/^( \* )(abstract class|class) \w+\s*$/', $docBlockLine)
+			) {
 				// Don't stack multiple "blank" lines"
 				if ($previousLine === ' *' && $docBlockLine === ' *') {
 					continue;
