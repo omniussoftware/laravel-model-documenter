@@ -138,7 +138,7 @@ class ModelFileWriter {
 			if ($docBlockLine !== ' */'
 				&& !Str::contains(strtolower($docBlockLine), $linesToIgnore)
 				// nukes old class declarations
-				&& !preg_match('/^( \* )(abstract class|class) \w+\s*$/', $docBlockLine)
+				&& !preg_match('/^( \* )([aA]bstract [cC]lass|[cC]lass) \w+\s*$/', $docBlockLine)
 			) {
 				// Don't stack multiple "blank" lines"
 				if ($previousLine === ' *' && $docBlockLine === ' *') {
