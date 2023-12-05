@@ -3,33 +3,33 @@
 	"description": "Adds docblocks to Laravel models",
 	"type": "library",
 	"require": {
-		"Illuminate/Support": ">=6.0",
-		"Illuminate/Console": ">=6.0"
+		"illuminate/support": ">=6.0",
+		"illuminate/console": ">=6.0"
 	},
 	"license": "MIT",
 	"authors": [
 		{
 			"name": "Lars Bergvall",
 			"email": "lars.m.bergvall@gmail.com"
+		},
+		{
+			"name": "Jonas Lindh Morén",
+			"email": "jonas.lindh-moren@academedia.se"
 		}
 	],
 	"autoload": {
 		"psr-4": {
-			"Enz0project\\ModelDocumenter\\": "src/"
+			"Omniway\\ModelDocumenter\\": "src/"
 		}
 	},
 	"extra": {
 		"laravel": {
 			"providers": [
-				"Enz0project\\ModelDocumenter\\ModelDocumenterProvider"
+				"Omniway\\ModelDocumenter\\Providers\\ModelDocumenterProvider"
 			],
 			"aliases": {
 
 			}
 		}
-	},
-	"require-dev": {
-		"orchestra/testbench": "^5.1",
-		"mockery/mockery": "^1.3"
 	}
 }
