@@ -55,7 +55,11 @@ class ModelData {
 			return [];
 		}
 		$reflectedInstance = $reflectionClass->newInstance();
-		$dates = $reflectedInstance->getDates();
+		$dates = collect($reflectedInstance->getDates())
+			->merge(collect($reflectedInstance->getCasts())
+				->filter(fn($c) => $c === 'datetime')
+				->keys()
+			)->all();
 
 		return collect(DB::select('DESCRIBE `' . $reflectedInstance->getTable() . '`'))
 			->mapWithKeys(function ($column) use ($dates) {
